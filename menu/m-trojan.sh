@@ -149,13 +149,12 @@ Domain       : <code>${domain}</code>
 Login Limit   : ${iplim} IP
 ISP          : ${ISP}
 CITY         : ${CITY}
-Port NTLS    : 80
 Port TLS     : 443
 Port gRPC    : 443
 UUID         : <code>${uuid}</code>
 AlterId      : 0
 Security     : auto
-Network      : NTLS, WS or gRPC
+Network      : WS or gRPC
 Path TLS     : <code>/trojan-ws</code>
 Path gRPC    : <code>/trojan-grpc</code>
 ◇━━━━━━━━━━━━━━━━━◇
@@ -184,13 +183,12 @@ Login Limit   : ${iplim} IP
 Quota Limit  : ${Quota} GB
 ISP          : ${ISP}
 CITY         : ${CITY}
-Port NTLS    : 80
 Port TLS     : 443
 Port gRPC    : 443
 UUID         : <code>${uuid}</code>
 AlterId      : 0
 Security     : auto
-Network      : NTLS, WS or gRPC
+Network      : WS or gRPC
 Path TLS     : <code>/trojan-ws</code>
 Path gRPC    : <code>/trojan-grpc</code>
 ◇━━━━━━━━━━━━━━━━━◇
