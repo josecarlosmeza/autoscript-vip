@@ -181,27 +181,6 @@ cat > /etc/xray/config.json << END
            "clients": [
               {
                  "password": "${uuid}"
-#trojanntls
-              }
-          ],
-         "udp": true
-       },
-       "streamSettings":{
-           "network": "ws",
-           "wsSettings": {
-               "path": "/trojan-ntls"
-            }
-         }
-     },
-    {
-      "listen": "127.0.0.1",
-      "port": "25432",
-      "protocol": "trojan",
-      "settings": {
-          "decryption":"none",
-           "clients": [
-              {
-                 "password": "${uuid}"
 #trojanws
               }
           ],
