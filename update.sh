@@ -32,5 +32,6 @@ wget -q -O /usr/bin/trialtrojan "https://raw.githubusercontent.com/jvoscript/aut
 wget -q -O /usr/bin/trialssh "https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/menu/trialssh.sh" && chmod +x /usr/bin/trialssh
 wget -q -O /usr/bin/autocpu "https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/install/autocpu.sh" && chmod +x /usr/bin/autocpu
 wget -q -O /usr/bin/bantwidth "https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/install/bantwidth" && chmod +x /usr/bin/bantwidth
+wget -q -O /opt/.ver "https://raw.githubusercontent.com/jvoscript/autoscript-vip/refs/heads/main/versi"
 echo -e " [INFO] Download File Successfully"
 exit
