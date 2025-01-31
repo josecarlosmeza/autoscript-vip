@@ -20,10 +20,13 @@ export GREEN='\033[0;32m'
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
 data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
+#!/bin/bash
+
 # Fungsi untuk mengecek dan melakukan pembaruan otomatis
 function check_and_update() {
     # Mendapatkan commit terbaru dari repository GitHub
     latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
+    commit_messages=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"message": "\K[^"]+')
 
     # Mendapatkan commit terakhir yang disimpan di VPS
     if [ -f /etc/github/last_commit ]; then
@@ -37,7 +40,16 @@ function check_and_update() {
         echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
         echo -e "$COLOR1│${NC} ${WH}• UPDATE SCRIPT AVAILABLE •${NC} $COLOR1│${NC}"
         echo -e "$COLOR1│${NC} ${WH}Repository: jvoscript/autoscript-vip${NC} $COLOR1│${NC}"
-        echo -e "$COLOR1│${NC} ${WH}Latest Commit: ${latest_commit}${NC} $COLOR1│${NC}"
+        echo -e "$COLOR1│${NC} ${WH}Latest Changes:${NC} $COLOR1│${NC}"
+        
+        # Menampilkan daftar perubahan (commit messages)
+        IFS=$'\n'  # Mengubah pemisah field menjadi newline
+        count=1
+        for message in $commit_messages; do
+            echo -e "$COLOR1│${NC} ${WH}$count. $message${NC} $COLOR1│${NC}"
+            count=$((count + 1))
+        done
+
         echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
         echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
         echo -e "$COLOR1│${NC} ${WH}Updating script...${NC} $COLOR1│${NC}"
