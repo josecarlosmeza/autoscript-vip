@@ -20,6 +20,74 @@ export GREEN='\033[0;32m'
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
 data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
+# Fungsi untuk mengecek pembaruan dari repository GitHub
+function check_update() {
+    # Mendapatkan commit terbaru dari repository GitHub
+    latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
+
+    # Mendapatkan commit terakhir yang disimpan di VPS
+    if [ -f /etc/github/last_commit ]; then
+        last_commit=$(cat /etc/github/last_commit)
+    else
+        last_commit=""
+    fi
+
+    # Jika ada pembaruan, tampilkan notifikasi dan tanyakan apakah ingin update
+    if [ "$latest_commit" != "$last_commit" ]; then
+        echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+        echo -e "$COLOR1│${NC} ${WH}• UPDATE SCRIPT AVAILABLE •${NC} $COLOR1│${NC}"
+        echo -e "$COLOR1│${NC} ${WH}Repository: jvoscript/autoscript-vip${NC} $COLOR1│${NC}"
+        echo -e "$COLOR1│${NC} ${WH}Latest Commit: ${latest_commit}${NC} $COLOR1│${NC}"
+        echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+        echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+        echo -e "$COLOR1│${NC} ${WH}Do you want to update the script? (Y/N)${NC} $COLOR1│${NC}"
+        echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+        read -p " Select option (Y/N): " yn
+        case $yn in
+            [Yy]* ) 
+                updatews
+                ;;
+            [Nn]* ) 
+                echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+                echo -e "$COLOR1│${NC} ${WH}Update canceled.${NC} $COLOR1│${NC}"
+                echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+                ;;
+            * ) 
+                echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+                echo -e "$COLOR1│${NC} ${WH}Invalid option. Update canceled.${NC} $COLOR1│${NC}"
+                echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+                ;;
+        esac
+    fi
+}
+
+# Fungsi untuk melakukan update
+function updatews() {
+    cd
+    rm -rf *
+    wget https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh
+    clear
+    chmod +x m-update.sh && ./m-update.sh
+
+    # Simpan commit terbaru setelah update
+    latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
+    echo "$latest_commit" > /etc/github/last_commit
+}
+
+# Membuat direktori dan file untuk menyimpan commit terakhir
+if [ ! -d /etc/github ]; then
+    mkdir -p /etc/github
+fi
+
+if [ ! -f /etc/github/last_commit ]; then
+    touch /etc/github/last_commit
+fi
+
+# Panggil fungsi untuk mengecek pembaruan
+check_update
+
+# Lanjutkan dengan skrip utama
+clear
 checking_sc() {
 useexp=$(curl -sS $data_ip | grep $MYIP | awk '{print $3}')
 if [[ $date_list < $useexp ]]; then
