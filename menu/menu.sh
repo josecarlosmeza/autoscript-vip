@@ -33,8 +33,9 @@ function check_and_update() {
         last_commit=""
     fi
 
-    # Jika ada pembaruan, tampilkan notifikasi
+    # Jika ada pembaruan, tampilkan notifikasi dan lakukan update
     if [ "$latest_commit" != "$last_commit" ]; then
+        # Tampilkan notifikasi
         echo -e "╭═════════════════════════════════════════════════════════╮"
         echo -e "│ • UPDATE SCRIPT AVAILABLE •                             │"
         echo -e "│ Repository: jvoscript/autoscript-vip                    │"
@@ -49,27 +50,17 @@ function check_and_update() {
         done
 
         echo -e "╰═════════════════════════════════════════════════════════╯"
-        echo -ne "Update Y/n ? "
-        read update_choice
-        case $update_choice in
-            Y|y) 
-                clear
-                echo "Downloading update script..."
-                wget -q https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh -O m-update.sh
-                chmod +x m-update.sh
-                echo "Running update script..."
-                ./m-update.sh
-                echo "$latest_commit" > /etc/github/last_commit  # Simpan commit terbaru
-                ;;
-            N|n) 
-                echo "Update skipped."
-                ;;
-            *) 
-                echo "Invalid choice. Update skipped."
-                ;;
-        esac
+        echo "Updating script..."
+
+        # Download dan jalankan script update
+        wget -q https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh -O m-update.sh
+        chmod +x m-update.sh
+        ./m-update.sh
+
+        # Simpan commit terbaru ke file
+        echo "$latest_commit" > /etc/github/last_commit
+        echo "Update completed."
     fi
-    # Jika tidak ada update, tidak perlu menampilkan notifikasi
 }
 
 # Fungsi untuk menjalankan pengecekan update setiap 2 menit
@@ -79,6 +70,9 @@ function auto_check_update() {
         sleep 120  # Tunggu 2 menit sebelum pengecekan berikutnya
     done
 }
+
+# Mulai pengecekan update di background
+auto_check_update &
 
 # Mulai pengecekan update di background
 auto_check_update &
