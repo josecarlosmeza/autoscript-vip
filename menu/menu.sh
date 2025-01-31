@@ -20,8 +20,8 @@ export GREEN='\033[0;32m'
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
 data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
-# Fungsi untuk mengecek pembaruan dari repository GitHub
-function check_update() {
+# Fungsi untuk mengecek dan melakukan pembaruan otomatis
+function check_and_update() {
     # Mendapatkan commit terbaru dari repository GitHub
     latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
 
@@ -32,7 +32,7 @@ function check_update() {
         last_commit=""
     fi
 
-    # Jika ada pembaruan, tampilkan notifikasi dan tanyakan apakah ingin update
+    # Jika ada pembaruan, lakukan update otomatis
     if [ "$latest_commit" != "$last_commit" ]; then
         echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
         echo -e "$COLOR1│${NC} ${WH}• UPDATE SCRIPT AVAILABLE •${NC} $COLOR1│${NC}"
@@ -40,24 +40,18 @@ function check_update() {
         echo -e "$COLOR1│${NC} ${WH}Latest Commit: ${latest_commit}${NC} $COLOR1│${NC}"
         echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
         echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
-        echo -e "$COLOR1│${NC} ${WH}Do you want to update the script? (Y/N)${NC} $COLOR1│${NC}"
+        echo -e "$COLOR1│${NC} ${WH}Updating script...${NC} $COLOR1│${NC}"
         echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
-        read -p " Select option (Y/N): " yn
-        case $yn in
-            [Yy]* ) 
-                updatews
-                ;;
-            [Nn]* ) 
-                echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
-                echo -e "$COLOR1│${NC} ${WH}Update canceled.${NC} $COLOR1│${NC}"
-                echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
-                ;;
-            * ) 
-                echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
-                echo -e "$COLOR1│${NC} ${WH}Invalid option. Update canceled.${NC} $COLOR1│${NC}"
-                echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
-                ;;
-        esac
+
+        # Proses update
+        updatews
+
+        # Simpan commit terbaru setelah update
+        echo "$latest_commit" > /etc/github/last_commit
+
+        echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+        echo -e "$COLOR1│${NC} ${WH}• UPDATE COMPLETED •${NC} $COLOR1│${NC}"
+        echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
     fi
 }
 
@@ -68,10 +62,6 @@ function updatews() {
     wget https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh
     clear
     chmod +x m-update.sh && ./m-update.sh
-
-    # Simpan commit terbaru setelah update
-    latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
-    echo "$latest_commit" > /etc/github/last_commit
 }
 
 # Membuat direktori dan file untuk menyimpan commit terakhir
@@ -83,8 +73,8 @@ if [ ! -f /etc/github/last_commit ]; then
     touch /etc/github/last_commit
 fi
 
-# Panggil fungsi untuk mengecek pembaruan
-check_update
+# Panggil fungsi untuk mengecek dan melakukan pembaruan otomatis
+check_and_update
 
 # Lanjutkan dengan skrip utama
 clear
