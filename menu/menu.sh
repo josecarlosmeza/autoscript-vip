@@ -20,15 +20,15 @@ export GREEN='\033[0;32m'
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
 data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
-# Fungsi untuk mengecek update
-function check_update() {
+# Fungsi untuk mengecek dan melakukan pembaruan otomatis
+function check_and_update() {
     # Mendapatkan commit terbaru dari repository GitHub
     latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
     commit_messages=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"message": "\K[^"]+')
 
-    # Membaca commit terakhir yang disimpan
-    if [ -f /opt/.last_commit ]; then
-        last_commit=$(cat /opt/.last_commit)
+    # Mendapatkan commit terakhir yang disimpan di VPS
+    if [ -f /etc/github/last_commit ]; then
+        last_commit=$(cat /etc/github/last_commit)
     else
         last_commit=""
     fi
@@ -59,7 +59,7 @@ function check_update() {
                 chmod +x m-update.sh
                 echo "Running update script..."
                 ./m-update.sh
-                echo "$latest_commit" > /opt/.last_commit
+                echo "$latest_commit" > /etc/github/last_commit  # Simpan commit terbaru
                 ;;
             N|n) 
                 echo "Update skipped."
@@ -68,21 +68,20 @@ function check_update() {
                 echo "Invalid choice. Update skipped."
                 ;;
         esac
-    else
-        echo "No update available."
     fi
+    # Jika tidak ada update, tidak perlu menampilkan notifikasi
 }
 
 # Fungsi untuk menjalankan pengecekan update setiap 2 menit
 function auto_check_update() {
     while true; do
-        check_update
+        check_and_update
         sleep 120  # Tunggu 2 menit sebelum pengecekan berikutnya
     done
 }
 
 # Mulai pengecekan update di background
-auto_check_update &
+auto_check_update 
 checking_sc() {
 useexp=$(curl -sS $data_ip | grep $MYIP | awk '{print $3}')
 if [[ $date_list < $useexp ]]; then
