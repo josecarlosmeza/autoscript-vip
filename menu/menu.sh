@@ -63,11 +63,11 @@ function check_and_update() {
     fi
 }
 
-# Fungsi untuk menjalankan pengecekan update setiap 2 menit
+# Fungsi untuk menjalankan pengecekan update setiap 1 menit
 function auto_check_update() {
     while true; do
         check_and_update
-        sleep 120  # Tunggu 2 menit sebelum pengecekan berikutnya
+        sleep 60  # Tunggu 1 menit sebelum pengecekan berikutnya
     done
 }
 # Mulai pengecekan update di background
