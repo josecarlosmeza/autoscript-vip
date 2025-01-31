@@ -1,96 +1,42 @@
 #!/bin/bash
 biji=`date +"%Y-%m-%d" -d "$dateFromServer"`
-#!/bin/bash
-
-# Konfigurasi dasar
 MYIP=$(wget -qO- ifconfig.me)
 colornow=$(cat /etc/rmbl/theme/color.conf)
-COLOR1=$(grep -w "TEXT" /etc/rmbl/theme/$colornow | cut -d: -f2 | sed 's/ //g')
-COLBG1=$(grep -w "BG" /etc/rmbl/theme/$colornow | cut -d: -f2 | sed 's/ //g')
-NC="\e[0m"
-WH="\033[1;37m"
-RED="\033[0;31m"
-YL="\033[0;33m"
-
-# URL Data IP
-DATA_IP="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
-
-# Fungsi untuk mengecek dan melakukan pembaruan otomatis
-function check_and_update() {
-    local latest_commit last_commit commit_messages
-    
-    while true; do
-        latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
-        commit_messages=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"message": "\K[^"]+')
-        
-        if [ -f /etc/github/last_commit ]; then
-            last_commit=$(cat /etc/github/last_commit)
-        else
-            last_commit=""
-        fi
-
-        if [ "$latest_commit" != "$last_commit" ]; then
-            echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮$NC"
-            echo -e "$COLOR1│${NC} ${WH}• UPDATE SCRIPT AVAILABLE •${NC} $COLOR1│${NC}"
-            echo -e "$COLOR1│${NC} ${WH}Repository: jvoscript/autoscript-vip${NC} $COLOR1│${NC}"
-            echo -e "$COLOR1│${NC} ${WH}Latest Changes:${NC} $COLOR1│${NC}"
-            
-            IFS=$'\n'
-            local count=1
-            for message in $commit_messages; do
-                echo -e "$COLOR1│${NC} ${WH}$count. $message${NC} $COLOR1│${NC}"
-                ((count++))
-            done
-            
-            echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯$NC"
-            echo -e "$COLOR1│${NC} ${WH}Updating script...${NC} $COLOR1│${NC}"
-            echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯$NC"
-
-            update_script
-            echo "$latest_commit" > /etc/github/last_commit
-
-            echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮$NC"
-            echo -e "$COLOR1│${NC} ${WH}• UPDATE COMPLETED •${NC} $COLOR1│${NC}"
-            echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯$NC"
-        fi
-        sleep 180  # Tunggu 3 menit sebelum pengecekan berikutnya
-    done
-}
-
-# Fungsi untuk melakukan update
-function update_script() {
-    cd /tmp || exit
-    rm -rf *
-    wget -q https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh -O m-update.sh
-    chmod +x m-update.sh
-    ./m-update.sh
-}
-
-# Persiapan direktori dan file penyimpanan commit terakhir
-mkdir -p /etc/github
-[ ! -f /etc/github/last_commit ] && touch /etc/github/last_commit
-
-# Jalankan pengecekan pembaruan di background
-check_and_update &
-# Lanjutkan dengan skrip utama
-clear
+export NC="\e[0m"
+export yl='\033[0;33m';
+export RED="\033[0;31m"
+export COLOR1="$(cat /etc/rmbl/theme/$colornow | grep -w "TEXT" | cut -d: -f2|sed 's/ //g')"
+export COLBG1="$(cat /etc/rmbl/theme/$colornow | grep -w "BG" | cut -d: -f2|sed 's/ //g')"
+WH='\033[1;37m'
+tram=$( free -h | awk 'NR==2 {print $2}' )
+uram=$( free -h | awk 'NR==2 {print $3}' )
+ISP=$(cat /etc/xray/isp)
+CITY=$(cat /etc/xray/city)
+author=$(cat /etc/profil)
+DATE2=$(date -R | cut -d " " -f -5)
+Exp2=$(curl -sS https://raw.githubusercontent.com/jvoscript/permission/main/ip | grep $MYIP | awk '{print $3}')
+export RED='\033[0;31m'
+export GREEN='\033[0;32m'
+data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
+date_list=$(date +"%Y-%m-%d" -d "$data_server")
+data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
 checking_sc() {
-    useexp=$(curl -sS $data_ip | grep $MYIP | awk '{print $3}')
-    if [[ $date_list < $useexp ]]; then
-        echo -ne
-    else
-        systemctl stop nginx
-        echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-        echo -e "$COLOR1│${NC}${COLBG1}          ${WH}• AUTOSCRIPT PREMIUM •                 ${NC}$COLOR1│ $NC"
-        echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-        echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-        echo -e "$COLOR1│            ${RED}PERMISSION DENIED !${NC}                  $COLOR1│"
-        echo -e "$COLOR1│   ${yl}Your VPS${NC} $MYIP \033[0;36mHas been Banned ${NC}      $COLOR1│"
-        echo -e "$COLOR1│     ${yl}Buy access permissions for scripts${NC}          $COLOR1│"
-        echo -e "$COLOR1│             \033[0;32mContact Your Admin ${NC}                 $COLOR1│"
-        echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-        key
-    fi
+useexp=$(curl -sS $data_ip | grep $MYIP | awk '{print $3}')
+if [[ $date_list < $useexp ]]; then
+echo -ne
+else
+systemctl stop nginx
+echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
+echo -e "$COLOR1│${NC}${COLBG1}          ${WH}• AUTOSCRIPT PREMIUM •                 ${NC}$COLOR1│ $NC"
+echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
+echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
+echo -e "$COLOR1│            ${RED}PERMISSION DENIED !${NC}                  $COLOR1│"
+echo -e "$COLOR1│   ${yl}Your VPS${NC} $MYIP \033[0;36mHas been Banned ${NC}      $COLOR1│"
+echo -e "$COLOR1│     ${yl}Buy access permissions for scripts${NC}          $COLOR1│"
+echo -e "$COLOR1│             \033[0;32mContact Your Admin ${NC}                 $COLOR1│"
+echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
+key
+fi
 }
 clear
 checking_sc
