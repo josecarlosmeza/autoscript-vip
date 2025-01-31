@@ -20,7 +20,6 @@ export GREEN='\033[0;32m'
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
 data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
-# Fungsi untuk mengecek dan melakukan pembaruan otomatis
 function check_and_update() {
     # Mendapatkan commit terbaru dari repository GitHub
     latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
@@ -28,12 +27,14 @@ function check_and_update() {
 
     # Mendapatkan commit terakhir yang disimpan di VPS
     if [ -f /etc/github/last_commit ]; then
-        last_commit=$(cat /etc/github/last_commit)
+        last_commit=$(cat /etc/github/last_commit | awk '{print $1}')
+        last_update_time=$(cat /etc/github/last_commit | awk '{print $2, $3}')
     else
         last_commit=""
+        last_update_time="Never"
     fi
 
-    # Jika ada pembaruan, tampilkan notifikasi dan lakukan update
+    # Jika ada pembaruan, tampilkan notifikasi dan tanyakan apakah ingin melakukan update
     if [ "$latest_commit" != "$last_commit" ]; then
         # Tampilkan notifikasi
         echo -e "╭═════════════════════════════════════════════════════════╮"
@@ -50,25 +51,29 @@ function check_and_update() {
         done
 
         echo -e "╰═════════════════════════════════════════════════════════╯"
-        echo "Updating script..."
 
-        # Download dan jalankan script update
-        wget -q https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh -O m-update.sh
-        chmod +x m-update.sh
-        ./m-update.sh
+        # Tampilkan informasi update terakhir
+        echo -e "Last update: $last_update_time"
 
-        # Simpan commit terbaru ke file
-        echo "$latest_commit" > /etc/github/last_commit
-        echo "Update completed."
+        # Tanyakan kepada pengguna apakah ingin melakukan update
+        read -p "Do you want to update the script? (Y/N): " update_choice
+        if [[ "$update_choice" == "Y" || "$update_choice" == "y" ]]; then
+            echo "Updating script..."
+
+            # Download dan jalankan script update
+            wget -q https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh -O m-update.sh
+            chmod +x m-update.sh
+            ./m-update.sh
+
+            # Simpan commit terbaru dan timestamp ke file
+            update_time=$(date +"%Y-%m-%d %H:%M:%S")
+            echo "$latest_commit $update_time" > /etc/github/last_commit
+            echo "Update completed on $update_time."
+        else
+            echo "Update skipped."
+        fi
     fi
-}
-
-# Fungsi untuk menjalankan pengecekan update setiap 2 menit
-function auto_check_update() {
-    while true; do
-        check_and_update
-        sleep 120  # Tunggu 2 menit sebelum pengecekan berikutnya
-    done
+    # Jika tidak ada update, langsung kembali tanpa menampilkan pesan
 }
 
 # Mulai pengecekan update di background
