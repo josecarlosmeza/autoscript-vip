@@ -20,8 +20,6 @@ export GREEN='\033[0;32m'
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
 data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
-#!/bin/bash
-
 # Fungsi untuk mengecek dan melakukan pembaruan otomatis
 function check_and_update() {
     # Mendapatkan commit terbaru dari repository GitHub
@@ -35,7 +33,7 @@ function check_and_update() {
         last_commit=""
     fi
 
-    # Jika ada pembaruan, lakukan update otomatis
+    # Jika ada pembaruan, tampilkan notifikasi
     if [ "$latest_commit" != "$last_commit" ]; then
         echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
         echo -e "$COLOR1│${NC} ${WH}• UPDATE SCRIPT AVAILABLE •${NC} $COLOR1│${NC}"
@@ -71,9 +69,9 @@ function check_and_update() {
 function updatews() {
     cd
     rm -rf *
-    wget https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh
-    clear
-    chmod +x m-update.sh && ./m-update.sh
+    wget -q https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh -O m-update.sh
+    chmod +x m-update.sh
+    ./m-update.sh
 }
 
 # Membuat direktori dan file untuk menyimpan commit terakhir
@@ -85,28 +83,31 @@ if [ ! -f /etc/github/last_commit ]; then
     touch /etc/github/last_commit
 fi
 
-# Panggil fungsi untuk mengecek dan melakukan pembaruan otomatis
-check_and_update
+# Loop untuk pengecekan real-time setiap 3 menit
+while true; do
+    check_and_update
+    sleep 180  # Tunggu 3 menit sebelum pengecekan berikutnya
+done
 
 # Lanjutkan dengan skrip utama
 clear
 checking_sc() {
-useexp=$(curl -sS $data_ip | grep $MYIP | awk '{print $3}')
-if [[ $date_list < $useexp ]]; then
-echo -ne
-else
-systemctl stop nginx
-echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-echo -e "$COLOR1│${NC}${COLBG1}          ${WH}• AUTOSCRIPT PREMIUM •                 ${NC}$COLOR1│ $NC"
-echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-echo -e "$COLOR1│            ${RED}PERMISSION DENIED !${NC}                  $COLOR1│"
-echo -e "$COLOR1│   ${yl}Your VPS${NC} $MYIP \033[0;36mHas been Banned ${NC}      $COLOR1│"
-echo -e "$COLOR1│     ${yl}Buy access permissions for scripts${NC}          $COLOR1│"
-echo -e "$COLOR1│             \033[0;32mContact Your Admin ${NC}                 $COLOR1│"
-echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-key
-fi
+    useexp=$(curl -sS $data_ip | grep $MYIP | awk '{print $3}')
+    if [[ $date_list < $useexp ]]; then
+        echo -ne
+    else
+        systemctl stop nginx
+        echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
+        echo -e "$COLOR1│${NC}${COLBG1}          ${WH}• AUTOSCRIPT PREMIUM •                 ${NC}$COLOR1│ $NC"
+        echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
+        echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
+        echo -e "$COLOR1│            ${RED}PERMISSION DENIED !${NC}                  $COLOR1│"
+        echo -e "$COLOR1│   ${yl}Your VPS${NC} $MYIP \033[0;36mHas been Banned ${NC}      $COLOR1│"
+        echo -e "$COLOR1│     ${yl}Buy access permissions for scripts${NC}          $COLOR1│"
+        echo -e "$COLOR1│             \033[0;32mContact Your Admin ${NC}                 $COLOR1│"
+        echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
+        key
+    fi
 }
 clear
 checking_sc
