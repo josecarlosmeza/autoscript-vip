@@ -81,7 +81,7 @@ function auto_check_update() {
 }
 
 # Mulai pengecekan update di background
-auto_check_update 
+auto_check_update &
 checking_sc() {
 useexp=$(curl -sS $data_ip | grep $MYIP | awk '{print $3}')
 if [[ $date_list < $useexp ]]; then
