@@ -20,49 +20,53 @@ export GREEN='\033[0;32m'
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
 data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
-# Fungsi untuk mengecek dan melakukan pembaruan otomatis
+#  Fungsi untuk mengecek dan melakukan pembaruan otomatis
 function check_and_update() {
-    # Mendapatkan commit terbaru dari repository GitHub
-    latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
-    commit_messages=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"message": "\K[^"]+')
+    while true; do
+        # Mendapatkan commit terbaru dari repository GitHub
+        latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
+        commit_messages=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"message": "\K[^"]+')
 
-    # Mendapatkan commit terakhir yang disimpan di VPS
-    if [ -f /etc/github/last_commit ]; then
-        last_commit=$(cat /etc/github/last_commit)
-    else
-        last_commit=""
-    fi
+        # Mendapatkan commit terakhir yang disimpan di VPS
+        if [ -f /etc/github/last_commit ]; then
+            last_commit=$(cat /etc/github/last_commit)
+        else
+            last_commit=""
+        fi
 
-    # Jika ada pembaruan, tampilkan notifikasi
-    if [ "$latest_commit" != "$last_commit" ]; then
-        echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
-        echo -e "$COLOR1│${NC} ${WH}• UPDATE SCRIPT AVAILABLE •${NC} $COLOR1│${NC}"
-        echo -e "$COLOR1│${NC} ${WH}Repository: jvoscript/autoscript-vip${NC} $COLOR1│${NC}"
-        echo -e "$COLOR1│${NC} ${WH}Latest Changes:${NC} $COLOR1│${NC}"
-        
-        # Menampilkan daftar perubahan (commit messages)
-        IFS=$'\n'  # Mengubah pemisah field menjadi newline
-        count=1
-        for message in $commit_messages; do
-            echo -e "$COLOR1│${NC} ${WH}$count. $message${NC} $COLOR1│${NC}"
-            count=$((count + 1))
-        done
+        # Jika ada pembaruan, tampilkan notifikasi
+        if [ "$latest_commit" != "$last_commit" ]; then
+            echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+            echo -e "$COLOR1│${NC} ${WH}• UPDATE SCRIPT AVAILABLE •${NC} $COLOR1│${NC}"
+            echo -e "$COLOR1│${NC} ${WH}Repository: jvoscript/autoscript-vip${NC} $COLOR1│${NC}"
+            echo -e "$COLOR1│${NC} ${WH}Latest Changes:${NC} $COLOR1│${NC}"
+            
+            # Menampilkan daftar perubahan (commit messages)
+            IFS=$'\n'  # Mengubah pemisah field menjadi newline
+            count=1
+            for message in $commit_messages; do
+                echo -e "$COLOR1│${NC} ${WH}$count. $message${NC} $COLOR1│${NC}"
+                count=$((count + 1))
+            done
 
-        echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
-        echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
-        echo -e "$COLOR1│${NC} ${WH}Updating script...${NC} $COLOR1│${NC}"
-        echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+            echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+            echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+            echo -e "$COLOR1│${NC} ${WH}Updating script...${NC} $COLOR1│${NC}"
+            echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
 
-        # Proses update
-        updatews
+            # Proses update
+            updatews
 
-        # Simpan commit terbaru setelah update
-        echo "$latest_commit" > /etc/github/last_commit
+            # Simpan commit terbaru setelah update
+            echo "$latest_commit" > /etc/github/last_commit
 
-        echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
-        echo -e "$COLOR1│${NC} ${WH}• UPDATE COMPLETED •${NC} $COLOR1│${NC}"
-        echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
-    fi
+            echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+            echo -e "$COLOR1│${NC} ${WH}• UPDATE COMPLETED •${NC} $COLOR1│${NC}"
+            echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+        fi
+
+        sleep 180  # Tunggu 3 menit sebelum pengecekan berikutnya
+    done
 }
 
 # Fungsi untuk melakukan update
@@ -83,12 +87,8 @@ if [ ! -f /etc/github/last_commit ]; then
     touch /etc/github/last_commit
 fi
 
-# Loop untuk pengecekan real-time setiap 3 menit
-while true; do
-    check_and_update
-    sleep 180  # Tunggu 3 menit sebelum pengecekan berikutnya
-done
-
+# Jalankan pengecekan pembaruan di background
+check_and_update &
 # Lanjutkan dengan skrip utama
 clear
 checking_sc() {
