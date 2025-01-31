@@ -21,7 +21,6 @@ data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date |
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
 data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
 # Fungsi untuk mengecek dan melakukan pembaruan otomatis
-# Fungsi untuk mengecek dan melakukan pembaruan otomatis
 function check_and_update() {
     # Mendapatkan commit terbaru dari repository GitHub
     latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
