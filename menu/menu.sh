@@ -20,61 +20,115 @@ export GREEN='\033[0;32m'
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
 data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
-checking_sc() {
-useexp=$(curl -sS $data_ip | grep $MYIP | awk '{print $3}')
-if [[ $date_list < $useexp ]]; then
-echo -ne
-else
-systemctl stop nginx
-echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-echo -e "$COLOR1│${NC}${COLBG1}          ${WH}• AUTOSCRIPT PREMIUM •                 ${NC}$COLOR1│ $NC"
-echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-echo -e "$COLOR1│            ${RED}PERMISSION DENIED !${NC}                  $COLOR1│"
-echo -e "$COLOR1│   ${yl}Your VPS${NC} $MYIP \033[0;36mHas been Banned ${NC}      $COLOR1│"
-echo -e "$COLOR1│     ${yl}Buy access permissions for scripts${NC}          $COLOR1│"
-echo -e "$COLOR1│             \033[0;32mContact Your Admin ${NC}                 $COLOR1│"
-echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-key
-fi
+
+# Fungsi untuk mengecek update dari GitHub
+function check_updates() {
+    local repo_url="https://api.github.com/repos/jvoscript/autoscript-vip/commits/main"
+    local latest_commit=$(curl -s $repo_url | grep -m 1 -oP '"sha": "\K[0-9a-f]+')
+    local current_commit=$(cat /opt/.commit_hash 2>/dev/null)
+
+    if [[ "$latest_commit" != "$current_commit" ]]; then
+        echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+        echo -e "$COLOR1│${NC} ${WH}• UPDATE AVAILABLE •${NC}                                 $COLOR1│${NC}"
+        echo -e "$COLOR1│${NC} ${WH}A new version of the script is available.${NC}            $COLOR1│${NC}"
+        echo -e "$COLOR1│${NC} ${WH}Updating to the latest version...${NC}                    $COLOR1│${NC}"
+        echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+        echo -e ""
+        sleep 3 # Memberi waktu untuk membaca notifikasi
+        updatews # Langsung menjalankan update
+    fi
 }
+
+# Fungsi untuk menyimpan commit hash terbaru setelah update
+function save_latest_commit() {
+    local repo_url="https://api.github.com/repos/jvoscript/autoscript-vip/commits/main"
+    local latest_commit=$(curl -s $repo_url | grep -m 1 -oP '"sha": "\K[0-9a-f]+')
+    echo "$latest_commit" > /opt/.commit_hash
+}
+
+# Fungsi untuk melakukan update
+function updatews() {
+    echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+    echo -e "$COLOR1│${NC} ${WH}• STARTING UPDATE PROCESS •${NC}                            $COLOR1│${NC}"
+    echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+    sleep 2
+
+    cd
+    rm -rf *
+    wget https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh
+    clear
+    chmod +x m-update.sh && ./m-update.sh
+    save_latest_commit
+
+    echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+    echo -e "$COLOR1│${NC} ${WH}• UPDATE COMPLETED •${NC}                                   $COLOR1│${NC}"
+    echo -e "$COLOR1│${NC} ${WH}The script has been successfully updated.${NC}              $COLOR1│${NC}"
+    echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+    sleep 3
+    clear
+}
+
+# Panggil fungsi pengecekan update di awal script
+clear
+check_updates
+
+# Lanjutkan dengan kode utama Anda
+checking_sc() {
+    useexp=$(curl -sS $data_ip | grep $MYIP | awk '{print $3}')
+    if [[ $date_list < $useexp ]]; then
+        echo -ne
+    else
+        systemctl stop nginx
+        echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+        echo -e "$COLOR1│${NC}${COLBG1}          ${WH}• AUTOSCRIPT PREMIUM •                 ${NC}$COLOR1│ $NC"
+        echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+        echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
+        echo -e "$COLOR1│            ${RED}PERMISSION DENIED !${NC}                  $COLOR1│"
+        echo -e "$COLOR1│   ${yl}Your VPS${NC} $MYIP \033[0;36mHas been Banned ${NC}      $COLOR1│"
+        echo -e "$COLOR1│     ${yl}Buy access permissions for scripts${NC}          $COLOR1│"
+        echo -e "$COLOR1│             \033[0;32mContact Your Admin ${NC}                 $COLOR1│"
+        echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
+        key
+    fi
+}
+
 clear
 checking_sc
 cd
 if [ ! -e /etc/per/id ]; then
-mkdir -p /etc/per
-echo "" > /etc/per/id
-echo "" > /etc/per/token
+    mkdir -p /etc/per
+    echo "" > /etc/per/id
+    echo "" > /etc/per/token
 elif [ ! -e /etc/perlogin/id ]; then
-mkdir -p /etc/perlogin
-echo "" > /etc/perlogin/id
-echo "" > /etc/perlogin/token
+    mkdir -p /etc/perlogin
+    echo "" > /etc/perlogin/id
+    echo "" > /etc/perlogin/token
 elif [ ! -e /usr/bin/id ]; then
-echo "" > /usr/bin/idchat
-echo "" > /usr/bin/token
+    echo "" > /usr/bin/idchat
+    echo "" > /usr/bin/token
 fi
 if [ ! -e /etc/xray/ssh ]; then
-echo "" > /etc/xray/ssh
+    echo "" > /etc/xray/ssh
 elif [ ! -e /etc/xray/sshx ]; then
-mkdir -p /etc/xray/sshx
+    mkdir -p /etc/xray/sshx
 elif [ ! -e /etc/xray/sshx/listlock ]; then
-echo "" > /etc/xray/sshx/listlock
+    echo "" > /etc/xray/sshx/listlock
 elif [ ! -e /etc/vmess ]; then
-mkdir -p /etc/vmess
+    mkdir -p /etc/vmess
 elif [ ! -e /etc/vmess/listlock ]; then
-echo "" > /etc/vmess/listlock
+    echo "" > /etc/vmess/listlock
 elif [ ! -e /etc/vless ]; then
-mkdir -p /etc/vless
+    mkdir -p /etc/vless
 elif [ ! -e /etc/vless/listlock ]; then
-echo "" > /etc/vless/listlock
+    echo "" > /etc/vless/listlock
 elif [ ! -e /etc/trojan ]; then
-mkdir -p /etc/trojan
+    mkdir -p /etc/trojan
 elif [ ! -e /etc/trojan/listlock ]; then
-echo "" > /etc/trojan/listlock
+    echo "" > /etc/trojan/listlock
 elif [ ! -e /etc/xray/noob ]; then
-echo "" > /etc/xray/noob
+    echo "" > /etc/xray/noob
 elif [ ! -e /etc/trojan-go/trgo ]; then
-echo "" > /etc/trojan-go/trgo
+    echo "" > /etc/trojan-go/trgo
 fi
 clear
 MODEL2=$(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')
@@ -91,64 +145,64 @@ today_rxv=$(vnstat -i ${vnstat_profile} | grep today | awk '{print $3}')
 today_tx=$(vnstat -i ${vnstat_profile} | grep today | awk '{print $5}')
 today_txv=$(vnstat -i ${vnstat_profile} | grep today | awk '{print $6}')
 if [ "$(grep -wc ${bulan} /etc/t1)" != '0' ]; then
-bulan=$(date +%b)
-month=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $9}')
-month_v=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $10}')
-month_rx=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $3}')
-month_rxv=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $4}')
-month_tx=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $6}')
-month_txv=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $7}')
+    bulan=$(date +%b)
+    month=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $9}')
+    month_v=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $10}')
+    month_rx=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $3}')
+    month_rxv=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $4}')
+    month_tx=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $6}')
+    month_txv=$(vnstat -i ${vnstat_profile} | grep "$bulan $ba$tahun" | awk '{print $7}')
 else
-bulan2=$(date +%Y-%m)
-month=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $8}')
-month_v=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $9}')
-month_rx=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $2}')
-month_rxv=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $3}')
-month_tx=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $5}')
-month_txv=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $6}')
+    bulan2=$(date +%Y-%m)
+    month=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $8}')
+    month_v=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $9}')
+    month_rx=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $2}')
+    month_rxv=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $3}')
+    month_tx=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $5}')
+    month_txv=$(vnstat -i ${vnstat_profile} | grep "$bulan2 " | awk '{print $6}')
 fi
 if [ "$(grep -wc yesterday /etc/t1)" != '0' ]; then
-yesterday=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $8}')
-yesterday_v=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $9}')
-yesterday_rx=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $2}')
-yesterday_rxv=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $3}')
-yesterday_tx=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $5}')
-yesterday_txv=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $6}')
+    yesterday=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $8}')
+    yesterday_v=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $9}')
+    yesterday_rx=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $2}')
+    yesterday_rxv=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $3}')
+    yesterday_tx=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $5}')
+    yesterday_txv=$(vnstat -i ${vnstat_profile} | grep yesterday | awk '{print $6}')
 else
-yesterday=NULL
-yesterday_v=NULL
-yesterday_rx=NULL
-yesterday_rxv=NULL
-yesterday_tx=NULL
-yesterday_txv=NULL
+    yesterday=NULL
+    yesterday_v=NULL
+    yesterday_rx=NULL
+    yesterday_rxv=NULL
+    yesterday_tx=NULL
+    yesterday_txv=NULL
 fi
 ssh_ws=$( systemctl status ws-stunnel | grep Active | awk '{print $3}' | sed 's/(//g' | sed 's/)//g' )
 if [[ $ssh_ws == "running" ]]; then
-status_ws="${COLOR1}ON${NC}"
+    status_ws="${COLOR1}ON${NC}"
 else
-status_ws="${RED}OFF${NC}"
+    status_ws="${RED}OFF${NC}"
 fi
 nginx=$( systemctl status nginx | grep Active | awk '{print $3}' | sed 's/(//g' | sed 's/)//g' )
 if [[ $nginx == "running" ]]; then
-status_nginx="${COLOR1}ON${NC}"
+    status_nginx="${COLOR1}ON${NC}"
 else
-status_nginx="${RED}OFF${NC}"
-systemctl start nginx
+    status_nginx="${RED}OFF${NC}"
+    systemctl start nginx
 fi
 if [[ -e /usr/bin/kyt ]]; then
-nginx=$( systemctl status kyt | grep Active | awk '{print $3}' | sed 's/(//g' | sed 's/)//g' )
-if [[ $nginx == "running" ]]; then
-echo -ne
-else
-systemctl start kyt
-fi
+    nginx=$( systemctl status kyt | grep Active | awk '{print $3}' | sed 's/(//g' | sed 's/)//g' )
+    if [[ $nginx == "running" ]]; then
+        echo -ne
+    else
+        systemctl start kyt
+    fi
 fi
 rm -rf /etc/status
 xray=$(systemctl status xray | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
 if [[ $xray == "running" ]]; then
-status_xray="${COLOR1}ON${NC}"
+    status_xray="${COLOR1}ON${NC}"
 else
-status_xray="${RED}OFF${NC}"
+    status_xray="${RED}OFF${NC}"
 fi
 
 stat_noobz=$( systemctl status noobzvpns | grep Active | awk '{print $3}' | sed 's/(//g' | sed 's/)//g' )
@@ -183,8 +237,6 @@ else
     systemctl start trojan-go
 fi
 
-
-
 # STATUS EXPIRED ACTIVE
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[4$below" && Font_color_suffix="\033[0m"
 Info="${Green_font_prefix}(Registered)${Font_color_suffix}"
@@ -216,7 +268,7 @@ if [[ -e /etc/github/api ]]; then
 m-ip
 else
 mkdir /etc/github
-echo "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" > /etc/github/api
+echo "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" > /etc/github/api
 echo "fernandairfan90@gmail.com" > /etc/github/email
 echo "jvoscript" > /etc/github/username
 m-ip
