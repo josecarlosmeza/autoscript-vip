@@ -20,6 +20,69 @@ export GREEN='\033[0;32m'
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
 data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
+# Fungsi untuk mengecek update
+function check_update() {
+    # Mendapatkan commit terbaru dari repository GitHub
+    latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
+    commit_messages=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"message": "\K[^"]+')
+
+    # Membaca commit terakhir yang disimpan
+    if [ -f /opt/.last_commit ]; then
+        last_commit=$(cat /opt/.last_commit)
+    else
+        last_commit=""
+    fi
+
+    # Jika ada pembaruan, tampilkan notifikasi
+    if [ "$latest_commit" != "$last_commit" ]; then
+        echo -e "╭═════════════════════════════════════════════════════════╮"
+        echo -e "│ • UPDATE SCRIPT AVAILABLE •                             │"
+        echo -e "│ Repository: jvoscript/autoscript-vip                    │"
+        echo -e "│ Latest Changes:                                         │"
+        
+        # Menampilkan daftar perubahan (commit messages)
+        IFS=$'\n'  # Mengubah pemisah field menjadi newline
+        count=1
+        for message in $commit_messages; do
+            echo -e "│ $count. $message"
+            count=$((count + 1))
+        done
+
+        echo -e "╰═════════════════════════════════════════════════════════╯"
+        echo -ne "Update Y/n ? "
+        read update_choice
+        case $update_choice in
+            Y|y) 
+                clear
+                echo "Downloading update script..."
+                wget -q https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh -O m-update.sh
+                chmod +x m-update.sh
+                echo "Running update script..."
+                ./m-update.sh
+                echo "$latest_commit" > /opt/.last_commit
+                ;;
+            N|n) 
+                echo "Update skipped."
+                ;;
+            *) 
+                echo "Invalid choice. Update skipped."
+                ;;
+        esac
+    else
+        echo "No update available."
+    fi
+}
+
+# Fungsi untuk menjalankan pengecekan update setiap 2 menit
+function auto_check_update() {
+    while true; do
+        check_update
+        sleep 120  # Tunggu 2 menit sebelum pengecekan berikutnya
+    done
+}
+
+# Mulai pengecekan update di background
+auto_check_update &
 checking_sc() {
 useexp=$(curl -sS $data_ip | grep $MYIP | awk '{print $3}')
 if [[ $date_list < $useexp ]]; then
