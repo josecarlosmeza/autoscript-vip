@@ -33,7 +33,6 @@ function check_updates() {
         echo -e "$COLOR1│${NC} ${WH}A new version of the script is available.${NC}            $COLOR1│${NC}"
         echo -e "$COLOR1│${NC} ${WH}Updating to the latest version...${NC}                    $COLOR1│${NC}"
         echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
-        echo -e ""
         sleep 3 # Memberi waktu untuk membaca notifikasi
         updatews # Langsung menjalankan update
     fi
@@ -53,16 +52,25 @@ function updatews() {
     echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
     sleep 2
 
-    cd
+    # Hapus file lama
+    echo -e "$COLOR1│${NC} ${WH}• Deleting old files...${NC}                                $COLOR1│${NC}"
     rm -rf *
+
+    # Unduh script update terbaru
+    echo -e "$COLOR1│${NC} ${WH}• Downloading the latest version...${NC}                    $COLOR1│${NC}"
     wget https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh
-    clear
+
+    # Jalankan script update
+    echo -e "$COLOR1│${NC} ${WH}• Running the update script...${NC}                         $COLOR1│${NC}"
     chmod +x m-update.sh && ./m-update.sh
+
+    # Simpan commit hash terbaru
     save_latest_commit
 
     echo -e "$COLOR1╭═════════════════════════════════════════════════════════╮${NC}"
     echo -e "$COLOR1│${NC} ${WH}• UPDATE COMPLETED •${NC}                                   $COLOR1│${NC}"
     echo -e "$COLOR1│${NC} ${WH}The script has been successfully updated.${NC}              $COLOR1│${NC}"
+    echo -e "$COLOR1│${NC} ${WH}Old files have been deleted.${NC}                           $COLOR1│${NC}"
     echo -e "$COLOR1╰═════════════════════════════════════════════════════════╯${NC}"
     sleep 3
     clear
