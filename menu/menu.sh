@@ -70,7 +70,6 @@ function auto_check_update() {
         sleep 120  # Tunggu 2 menit sebelum pengecekan berikutnya
     done
 }
-
 # Mulai pengecekan update di background
 auto_check_update &
 checking_sc() {
