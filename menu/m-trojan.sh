@@ -702,74 +702,74 @@ arg="$prev"
 done
 echo "$inu"
 }
-function convert() {
-local -i bytes=$1
-if [[ $bytes -lt 1024 ]]; then
-echo "${bytes} B"
-elif [[ $bytes -lt 1048576 ]]; then
-echo "$(((bytes + 1023) / 1024)) KB"
-elif [[ $bytes -lt 1073741824 ]]; then
-echo "$(((bytes + 1048575) / 1048576)) MB"
-else
-echo "$(((bytes + 1073741823) / 1073741824)) GB"
-fi
+# Function to check if a user is online
+function is_online() {
+  local user=$1
+  local log_file="/var/log/xray/access.log"
+  local current_time=$(date +%s)
+  local last_activity=$(grep -w "email: ${user}" "${log_file}" | tail -n 1 | awk '{print $2}')
+  local last_activity_time=$(date -d "${last_activity}" +%s 2>/dev/null || echo 0)
+  local time_diff=$((current_time - last_activity_time))
+
+  # Consider user online if last activity was within the last 60 seconds
+  if [[ ${time_diff} -le 60 ]]; then
+    return 0  # Online
+  else
+    return 1  # Offline
+  fi
 }
-function cek-tr(){
-clear
-xrayy=$(cat /var/log/xray/access.log | wc -l)
-if [[ xrayy -le 5 ]]; then
-systemctl restart xray
-fi
-xraylimit
-echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-echo -e "$COLOR1│${NC}${COLBG1}             ${WH}• TROJAN USER ONLINE •              ${NC}$COLOR1│ $NC"
-echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-vm=($(cat /etc/xray/config.json | grep "^#trg" | awk '{print $2}' | sort -u))
-echo -n >/tmp/vm
-for db1 in ${vm[@]}; do
-logvm=$(cat /var/log/xray/access.log | grep -w "email: ${db1}" | tail -n 100)
-while read a; do
-if [[ -n ${a} ]]; then
-set -- ${a}
-ina="${7}"
-inu="${2}"
-anu="${3}"
-enu=$(echo "${anu}" | sed 's/tcp://g' | sed '/^$/d' | cut -d. -f1,2,3)
-now=$(tim2sec ${timenow})
-client=$(tim2sec ${inu})
-nowt=$(((${now} - ${client})))
-if [[ ${nowt} -lt 40 ]]; then
-cat /tmp/vm | grep -w "${ina}" | grep -w "${enu}" >/dev/null
-if [[ $? -eq 1 ]]; then
-echo "${ina} ${inu} WIB : ${enu}" >>/tmp/vm
-splvm=$(cat /tmp/vm)
-fi
-fi
-fi
-done <<<"${logvm}"
-done
-if [[ ${splvm} != "" ]]; then
-for vmuser in ${vm[@]}; do
-vmhas=$(cat /tmp/vm | grep -w "${vmuser}" | wc -l)
-tess=0
-if [[ ${vmhas} -gt $tess ]]; then
-byt=$(cat /etc/limit/trojan/${vmuser})
-gb=$(convert ${byt})
-lim=$(cat /etc/trojan/${vmuser})
-lim2=$(convert ${lim})
-echo -e "$COLOR1${NC} USERNAME : \033[0;33m$vmuser"
-echo -e "$COLOR1${NC} IP LOGIN : \033[0;33m$vmhas"
-echo -e "$COLOR1${NC} USAGE : \033[0;33m$gb"
-echo -e "$COLOR1${NC} LIMIT : \033[0;33m$lim2"
-echo -e ""
-fi
-done
-fi
-echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-echo ""
-read -n 1 -s -r -p "   Press any key to back on menu"
-m-trojan
+# Function to convert bytes to human-readable format
+function convert() {
+  local -i bytes=$1
+  if [[ $bytes -lt 1024 ]]; then
+    echo "${bytes} B"
+  elif [[ $bytes -lt 1048576 ]]; then
+    echo "$(((bytes + 1023) / 1024)) KB"
+  elif [[ $bytes -lt 1073741824 ]]; then
+    echo "$(((bytes + 1048575) / 1048576)) MB"
+  else
+    echo "$(((bytes + 1073741823) / 1073741824)) GB"
+  fi
+}
+# Function to handle Trojan users
+function cek-tr() {
+  clear
+  echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
+  echo -e "$COLOR1│${NC}${COLBG1}             ${WH}• TROJAN USER ONLINE •              ${NC}$COLOR1│ $NC"
+  echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
+  echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
+
+  TROJAN_USERS=($(grep "^#trg" /etc/xray/config.json | awk '{print $2}' | sort -u))
+  ONLINE_USERS=()
+
+  for USER in "${TROJAN_USERS[@]}"; do
+    if is_online "${USER}"; then
+      ONLINE_USERS+=("${USER}")
+    fi
+  done
+
+  if [[ ${#ONLINE_USERS[@]} -gt 0 ]]; then
+    for USER in "${ONLINE_USERS[@]}"; do
+      IP_COUNT=$(grep -w "email: ${USER}" /var/log/xray/access.log | awk '{print $7}' | sort -u | wc -l)
+      TRAFFIC=$(xray api stats --server=127.0.0.1:10085 -name "user>>>${USER}>>>traffic>>>downlink" 2>/dev/null | grep -w "value" | awk '{print $2}' | cut -d '"' -f2)
+      TRAFFIC=${TRAFFIC:-0}
+      GB=$(convert ${TRAFFIC})
+      LIMIT=$(cat /etc/trojan/${USER} 2>/dev/null || echo "10 GB")
+
+      echo -e "$COLOR1${NC} USERNAME : \033[0;33m$USER"
+      echo -e "$COLOR1${NC} IP LOGIN : \033[0;33m$IP_COUNT"
+      echo -e "$COLOR1${NC} USAGE : \033[0;33m$GB"
+      echo -e "$COLOR1${NC} LIMIT : \033[0;33m$LIMIT"
+      echo -e ""
+    done
+  else
+    echo -e "$COLOR1${NC} No TROJAN users online."
+  fi
+
+  echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
+  echo ""
+  read -n 1 -s -r -p "   Press any key to back on menu"
+  m-trojan
 }
 function list-trojan(){
 clear
