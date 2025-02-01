@@ -1,274 +1,119 @@
 #!/bin/bash
-biji=`date +"%Y-%m-%d" -d "$dateFromServer"`
-colornow=$(cat /etc/rmbl/theme/color.conf)
+# Config
 NC="\e[0m"
 RED="\033[0;31m"
-COLOR1="$(cat /etc/rmbl/theme/$colornow | grep -w "TEXT" | cut -d: -f2|sed 's/ //g')"
-COLBG1="$(cat /etc/rmbl/theme/$colornow | grep -w "BG" | cut -d: -f2|sed 's/ //g')"
 WH='\033[1;37m'
-ipsaya=$(wget -qO- ipinfo.io/ip)
-data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
-date_list=$(date +"%Y-%m-%d" -d "$data_server")
-data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
-checking_sc() {
-useexp=$(curl -sS $data_ip | grep $ipsaya | awk '{print $3}')
-if [[ $date_list < $useexp ]]; then
-echo -ne
-else
-echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
-echo -e "$COLOR1 ${NC} ${COLBG1}          ${WH}• AUTOSCRIPT PREMIUM •               ${NC} $COLOR1 $NC"
-echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
-echo -e "$COLOR1┌─────────────────────────────────────────────────┐${NC}"
-echo -e "            ${RED}PERMISSION DENIED !${NC}"
-echo -e "   \033[0;33mYour VPS${NC} $ipsaya \033[0;33mHas been Banned${NC}"
-echo -e "     \033[0;33mBuy access permissions for scripts${NC}"
-echo -e "             \033[0;33mContact Your Admin ${NC}"
-echo -e "     \033[0;36mTelegram${NC}: https://t.me/masansor"
-echo -e "$COLOR1└─────────────────────────────────────────────────┘${NC}"
-exit
-fi
-}
-checking_sc
-cd
-bash2=$( pgrep bash | wc -l )
-if [[ $bash2 -gt "20" ]]; then
-killall bash
-fi
-inaIP=$(wget -qO- ipv4.icanhazip.com)
-timenow=$(date +%T" WIB")
 TIMES="10"
 CHATID=$(cat /etc/perlogin/id)
 KEY=$(cat /etc/perlogin/token)
 URL="https://api.telegram.org/bot$KEY/sendMessage"
-domen=`cat /etc/xray/domain`
+DOMAIN=$(cat /etc/xray/domain)
 ISP=$(cat /etc/xray/isp)
 CITY=$(cat /etc/xray/city)
 DATE=$(date +'%Y-%m-%d')
 TIME=$(date +'%H:%M:%S')
-author=$(cat /etc/profil)
-type=$(cat /etc/typexray)
-waktulock=$(cat /etc/waktulock)
-if [[ -z ${waktulock} ]]; then
-echo "15" > /etc/waktulock
-fi
-if [[ -z ${type} ]]; then
-echo "delete" > /etc/typexray
-fi
-tim2sec() {
-mult=1
-arg="$1"
-inu=0
-while [ ${#arg} -gt 0 ]; do
-prev="${arg%:*}"
-if [ "$prev" = "$arg" ]; then
-curr="${arg#0}"
-prev=""
-else
-curr="${arg##*:}"
-curr="${curr#0}"
-fi
-curr="${curr%.*}"
-inu=$((inu + curr * mult))
-mult=$((mult * 60))
-arg="$prev"
-done
-echo "$inu"
-}
+AUTHOR=$(cat /etc/profil)
+TYPE=$(cat /etc/typexray)
+WAKTULOCK=$(cat /etc/waktulock)
+
+# Function to convert bytes to human-readable format
 function convert() {
-local -i bytes=$1
-if [[ $bytes -lt 1024 ]]; then
-echo "${bytes} B"
-elif [[ $bytes -lt 1048576 ]]; then
-echo "$(((bytes + 1023) / 1024)) KB"
-elif [[ $bytes -lt 1073741824 ]]; then
-echo "$(((bytes + 1048575) / 1048576)) MB"
-else
-echo "$(((bytes + 1073741823) / 1073741824)) GB"
-fi
+  local -i bytes=$1
+  if [[ $bytes -lt 1024 ]]; then
+    echo "${bytes} B"
+  elif [[ $bytes -lt 1048576 ]]; then
+    echo "$(((bytes + 1023) / 1024)) KB"
+  elif [[ $bytes -lt 1073741824 ]]; then
+    echo "$(((bytes + 1048575) / 1048576)) MB"
+  else
+    echo "$(((bytes + 1073741823) / 1073741824)) GB"
+  fi
 }
+
+# Function to handle VMess users
 function vmess() {
-cd
-if [[ ! -e /etc/limit/vmess ]]; then
-mkdir -p /etc/limit/vmess
-fi
-vm=($(cat /etc/xray/config.json | grep "^#vmg" | awk '{print $2}' | sort -u))
-echo -n >/tmp/vm
-for db1 in ${vm[@]}; do
-logvm=$(cat /var/log/xray/access.log | grep -w "email: ${db1}" | tail -n 150)
-while read a; do
-if [[ -n ${a} ]]; then
-set -- ${a}
-ina="${7}"
-inu="${2}"
-anu="${3}"
-enu=$(echo "${anu}" | sed 's/tcp://g' | sed '/^$/d' | cut -d. -f1,2,3)
-now=$(tim2sec ${timenow})
-client=$(tim2sec ${inu})
-nowt=$(((${now} - ${client})))
-if [[ ${nowt} -lt 40 ]]; then
-cat /tmp/vm | grep -w "${ina}" | grep -w "${enu}" >/dev/null
-if [[ $? -eq 1 ]]; then
-echo "${ina} ${inu} WIB : ${enu}" >>/tmp/vm
-splvm=$(cat /tmp/vm)
-fi
-fi
-fi
-done <<<"${logvm}"
-done
-if [[ ${splvm} != "" ]]; then
-for vmuser in ${vm[@]}; do
-vmhas=$(cat /tmp/vm | grep -w "${vmuser}" | wc -l)
-vmhas2=$(cat /tmp/vm | grep -w "${vmuser}" | cut -d ' ' -f 2-8 | nl -s '. ' | while read line; do printf "%-20s\n" "$line"; done )
-vmsde=$(ls "/etc/vmess" | grep -w "${vmuser}IP")
-if [[ -z ${vmsde} ]]; then
-vmip="0"
-else
-vmip=$(cat /etc/vmess/${vmuser}IP)
-fi
-if [[ ${vmhas} -gt "0" ]]; then
-downlink=$(xray api stats --server=127.0.0.1:10085 -name "user>>>${vmuser}>>>traffic>>>downlink" | grep -w "value" | awk '{print $2}' | cut -d '"' -f2)
-cd
-if [ ! -e /etc/limit/vmess/${vmuser} ]; then
-echo "${downlink}" > /etc/limit/vmess/${vmuser}
-xray api stats --server=127.0.0.1:10085 -name "user>>>${vmuser}>>>traffic>>>downlink" -reset > /dev/null 2>&1
-else
-plus2=$(cat /etc/limit/vmess/${vmuser})
-if [[ -z ${plus2} ]]; then
-echo "1" > /etc/limit/vmess/${vmuser}
-fi
-plus3=$(( ${downlink} + ${plus2} ))
-echo "${plus3}" > /etc/limit/vmess/${vmuser}
-xray api stats --server=127.0.0.1:10085 -name "user>>>${vmuser}>>>traffic>>>downlink" -reset > /dev/null 2>&1
-fi
-if [ ! -e /etc/vmess/${vmuser} ]; then
-echo "999999999999" > /etc/vmess/${vmuser}
-fi
-limit=$(cat /etc/vmess/${vmuser})
-usage=$(cat /etc/limit/vmess/${vmuser})
-if [ $usage -gt $limit ]; then
-exp=$(grep -wE "^#vmg $vmuser" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
-uuid=$(grep -wE "^#vmg $vmuser" "/etc/xray/config.json" | cut -d ' ' -f 4 | sort | uniq)
-echo "### $vmuser $exp $uuid" >> /etc/vmess/userQuota
-sed -i "/^#vmg $vmuser $exp/,/^},{/d" /etc/xray/config.json
-sed -i "/^#vm $vmuser $exp/,/^},{/d" /etc/xray/config.json
-rm /etc/limit/vmess/${vmuser} >/dev/null 2>&1
-systemctl restart xray
-fi
-fi
-if [[ ${vmhas} -gt $vmip ]]; then
-byt=$(cat /etc/limit/vmess/$vmuser)
-gb=$(convert ${byt})
-echo "$vmuser ${vmhas}" >> /etc/vmess/${vmuser}login
-vmessip=$(cat /etc/vmess/${vmuser}login | wc -l)
-ssvmess1=$(ls "/etc/vmess" | grep -w "notif")
-if [[ -z ${ssvmess1} ]]; then
-ssvmess="3"
-else
-ssvmess=$(cat /etc/vmess/notif)
-fi
-if [ $vmessip = $ssvmess ]; then
-if [ $type = "lock" ]; then
-TEXT2="
-<code>◇━━━━━━━━━━━━━━◇</code>
+  if [[ ! -e /etc/limit/vmess ]]; then
+    mkdir -p /etc/limit/vmess
+  fi
+
+  VMESS_USERS=($(grep "^#vmg" /etc/xray/config.json | awk '{print $2}' | sort -u))
+  for USER in "${VMESS_USERS[@]}"; do
+    LOG=$(grep -w "email: ${USER}" /var/log/xray/access.log | tail -n 150)
+    IP_COUNT=$(echo "$LOG" | awk '{print $7}' | sort -u | wc -l)
+
+    # Get traffic stats
+    TRAFFIC=$(xray api stats --server=127.0.0.1:10085 -name "user>>>${USER}>>>traffic>>>downlink" 2>/dev/null | grep -w "value" | awk '{print $2}' | cut -d '"' -f2)
+    if [[ -z "$TRAFFIC" ]]; then
+      TRAFFIC=0
+    fi
+
+    # Update usage
+    if [[ ! -e /etc/limit/vmess/${USER} ]]; then
+      echo "$TRAFFIC" > /etc/limit/vmess/${USER}
+    else
+      PREV_TRAFFIC=$(cat /etc/limit/vmess/${USER})
+      TOTAL_TRAFFIC=$((TRAFFIC + PREV_TRAFFIC))
+      echo "$TOTAL_TRAFFIC" > /etc/limit/vmess/${USER}
+    fi
+
+    # Check quota limit
+    LIMIT=$(cat /etc/vmess/${USER} 2>/dev/null || echo "999999999999")
+    if [[ $TOTAL_TRAFFIC -gt $LIMIT ]]; then
+      EXP=$(grep -wE "^#vmg ${USER}" /etc/xray/config.json | awk '{print $3}')
+      UUID=$(grep -wE "^#vmg ${USER}" /etc/xray/config.json | awk '{print $4}')
+      echo "### ${USER} ${EXP} ${UUID}" >> /etc/vmess/userQuota
+      sed -i "/^#vmg ${USER} ${EXP}/,/^},{/d" /etc/xray/config.json
+      sed -i "/^#vm ${USER} ${EXP}/,/^},{/d" /etc/xray/config.json
+      rm -f /etc/limit/vmess/${USER}
+      systemctl restart xray
+    fi
+
+    # Check multi-login
+    IP_LIMIT=$(cat /etc/vmess/${USER}IP 2>/dev/null || echo "0")
+    if [[ $IP_COUNT -gt $IP_LIMIT ]]; then
+      BYTES=$(cat /etc/limit/vmess/${USER})
+      GB=$(convert $BYTES)
+      echo "${USER} ${IP_COUNT}" >> /etc/vmess/${USER}login
+      NOTIF_COUNT=$(cat /etc/vmess/notif 2>/dev/null || echo "3")
+
+      if [[ $IP_COUNT -ge $NOTIF_COUNT ]]; then
+        if [[ "$TYPE" == "lock" ]]; then
+          TEXT="<code>◇━━━━━━━━━━━━━━◇</code>
 <b> ⚠️ VMESS MULTI LOGIN</b>
 <code>◇━━━━━━━━━━━━━━◇</code>
-<b>DOMAIN : ${domen} </b>
-<b>ISP : ${ISP}</b>
-<b>CITY : ${CITY}</b>
-<b>DATE LOGIN : $DATE</b>
-<b>USERNAME : $vmuser </b>
-<b>TOTAL LOGIN IP : ${vmhas} </b>
-<b>USAGE : ${gb} </b>
+<b>USERNAME : ${USER}</b>
+<b>IP LOGIN : ${IP_COUNT}</b>
+<b>USAGE : ${GB}</b>
 <code>◇━━━━━━━━━━━━━━◇</code>
-<b>⚠️ TIME LOGIN : IP LOGIN </b>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<code>$vmhas2</code>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<i>${ssvmess}x Multi Login Lock Account $waktulock Minutes...</i>
-"
-echo "" > /tmp/vm
-sed -i "/${vmuser}/d" /var/log/xray/access.log
-curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT2&parse_mode=html" $URL >/dev/null
-exp=$(grep -wE "^#vmg $vmuser" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
-uuid=$(grep -wE "^#vmg $vmuser" "/etc/xray/config.json" | cut -d ' ' -f 4 | sort | uniq)
-echo "### $vmuser $exp $uuid" >> /etc/vmess/listlock
-sed -i "/^#vmg $vmuser $exp/,/^},{/d" /etc/xray/config.json
-sed -i "/^#vm $vmuser $exp/,/^},{/d" /etc/xray/config.json
-rm /etc/vmess/${vmuser}login >/dev/null 2>&1
-cat> /etc/cron.d/vmess${vmuser} << EOF
-SHELL=/bin/sh
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-*/$waktulock * * * * root /usr/bin/xray vmess $vmuser $uuid $exp
-EOF
-systemctl restart xray
-service cron restart
-fi
-if [ $type = "delete" ]; then
-TEXT2="
-<code>◇━━━━━━━━━━━━━━◇</code>
+<i>Account locked for ${WAKTULOCK} minutes.</i>"
+          curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT&parse_mode=html" $URL >/dev/null
+          echo "### ${USER} ${EXP} ${UUID}" >> /etc/vmess/listlock
+          sed -i "/^#vmg ${USER} ${EXP}/,/^},{/d" /etc/xray/config.json
+          sed -i "/^#vm ${USER} ${EXP}/,/^},{/d" /etc/xray/config.json
+          rm -f /etc/vmess/${USER}login
+          systemctl restart xray
+        elif [[ "$TYPE" == "delete" ]]; then
+          TEXT="<code>◇━━━━━━━━━━━━━━◇</code>
 <b> ⚠️ VMESS MULTI LOGIN</b>
 <code>◇━━━━━━━━━━━━━━◇</code>
-<b>DOMAIN : ${domen} </b>
-<b>ISP : ${ISP}</b>
-<b>CITY : ${CITY}</b>
-<b>DATE LOGIN : $DATE</b>
-<b>USERNAME : $vmuser </b>
-<b>TOTAL LOGIN IP : ${vmhas} </b>
-<b>USAGE : ${gb} </b>
+<b>USERNAME : ${USER}</b>
+<b>IP LOGIN : ${IP_COUNT}</b>
+<b>USAGE : ${GB}</b>
 <code>◇━━━━━━━━━━━━━━◇</code>
-<b>⚠️ TIME LOGIN : IP LOGIN </b>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<code>$vmhas2</code>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<i>${ssvmess}x Multi Login Auto Lock Account...</i>
-"
-echo "" > /tmp/vm
-sed -i "/${vmuser}/d" /var/log/xray/access.log
-curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT2&parse_mode=html" $URL >/dev/null
-exp=$(grep -wE "^#vmg $vmuser" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
-uuid=$(grep -wE "^#vmg $vmuser" "/etc/xray/config.json" | cut -d ' ' -f 4 | sort | uniq)
-echo "### $vmuser $exp $uuid" >> /etc/vmess/listlock
-sed -i "/^#vmg $vmuser $exp/,/^},{/d" /etc/xray/config.json
-sed -i "/^#vm $vmuser $exp/,/^},{/d" /etc/xray/config.json
-rm /etc/vmess/${vmuser}login >/dev/null 2>&1
-systemctl restart xray
-fi
-else
-TEXT="
-<code>◇━━━━━━━━━━━━━━◇</code>
-<b> ⚠️ VMESS MULTI LOGIN</b>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<b>DOMAIN : ${domen} </b>
-<b>ISP : ${ISP}</b>
-<b>CITY : ${CITY}</b>
-<b>DATE LOGIN : $DATE</b>
-<b>USERNAME : $vmuser </b>
-<b>TOTAL LOGIN IP : ${vmhas} </b>
-<b>USAGE : ${gb} </b>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<b>⚠️ TIME LOGIN : IP LOGIN </b>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<code>$vmhas2</code>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<i>${vmessip}x Multi Login : ${ssvmess}x Multi Login Auto Lock Account...</i>
-"
-echo "" > /tmp/vm
-sed -i "/${vmuser}/d" /var/log/xray/access.log
-curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT&parse_mode=html" $URL >/dev/null
-fi
-if [ $vmessip -gt $ssvmess ]; then
-exp=$(grep -wE "^#vmg $vmuser" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
-uuid=$(grep -wE "^#vmg $vmuser" "/etc/xray/config.json" | cut -d ' ' -f 4 | sort | uniq)
-echo "### $vmuser $exp $uuid" >> /etc/vmess/listlock
-sed -i "/^#vmg $vmuser $exp/,/^},{/d" /etc/xray/config.json
-sed -i "/^#vm $vmuser $exp/,/^},{/d" /etc/xray/config.json
-rm /etc/vmess/${vmuser}login >/dev/null 2>&1
-systemctl restart xray
-fi
-fi
-done
-fi
+<i>Account deleted due to multi-login.</i>"
+          curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT&parse_mode=html" $URL >/dev/null
+          echo "### ${USER} ${EXP} ${UUID}" >> /etc/vmess/listlock
+          sed -i "/^#vmg ${USER} ${EXP}/,/^},{/d" /etc/xray/config.json
+          sed -i "/^#vm ${USER} ${EXP}/,/^},{/d" /etc/xray/config.json
+          rm -f /etc/vmess/${USER}login
+          systemctl restart xray
+        fi
+      fi
+    fi
+  done
 }
+# Call functions
+vmess
 function vless() {
 cd
 if [[ ! -e /etc/limit/vless ]]; then
