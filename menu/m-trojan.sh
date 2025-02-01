@@ -96,10 +96,12 @@ sed -i '/#trojanws$/a\#tr '"$user $exp $uuid"'\
 },{"password": "'""$uuid""'","email": "'""$user""'"' /etc/xray/config.json
 sed -i '/#trojangrpc$/a\#trg '"$user $exp"'\
 },{"password": "'""$uuid""'","email": "'""$user""'"' /etc/xray/config.json
+trojanlink2="trojan://${uuid}@${domain}:80?security=none&type=ws&path=/trojan-ntls&host=${domain}#${user}"
 trojanlink1="trojan://${uuid}@${domain}:443?mode=gun&security=tls&type=grpc&serviceName=trojan-grpc&sni=${domain}#${user}"
 trojanlink="trojan://${uuid}@${domain}:443?path=%2Ftrojan-ws&security=tls&host=${domain}&type=ws&sni=${domain}#${user}"
 trojan1="trojan://${uuid}@${domain}:443?mode=gun%26security=tls%26type=grpc%26serviceName=trojan-grpc%26sni=${domain}#${user}"
 trojan2="trojan://${uuid}@${domain}:443?path=%2Ftrojan-ws%26security=tls%26host=${domain}%26type=ws%26sni=${domain}#${user}"
+trojan3="trojan://${uuid}@${domain}:80?security=none%2type=ws%2path=%2Ftrojan-ntls%2host=${domain}#${user}"
 cat > /home/vps/public_html/trojan-$user.txt <<-END
 _______________________________
 Format Trojan WS (CDN)
@@ -149,14 +151,18 @@ Domain       : <code>${domain}</code>
 Login Limit   : ${iplim} IP
 ISP          : ${ISP}
 CITY         : ${CITY}
+Port NTLS    : 80
 Port TLS     : 443
 Port gRPC    : 443
 UUID         : <code>${uuid}</code>
 AlterId      : 0
 Security     : auto
-Network      : WS or gRPC
+Network      : NTLS, WS or gRPC
 Path TLS     : <code>/trojan-ws</code>
 Path gRPC    : <code>/trojan-grpc</code>
+◇━━━━━━━━━━━━━━━━━◇
+Link NTLS    :
+<code>${trojan3}</code>
 ◇━━━━━━━━━━━━━━━━━◇
 Link TLS    :
 <code>${trojan2}</code>
@@ -183,14 +189,18 @@ Login Limit   : ${iplim} IP
 Quota Limit  : ${Quota} GB
 ISP          : ${ISP}
 CITY         : ${CITY}
+Port NTLS    : 80
 Port TLS     : 443
 Port gRPC    : 443
 UUID         : <code>${uuid}</code>
 AlterId      : 0
 Security     : auto
-Network      : WS or gRPC
+Network      : NTLS, WS or gRPC
 Path TLS     : <code>/trojan-ws</code>
 Path gRPC    : <code>/trojan-grpc</code>
+◇━━━━━━━━━━━━━━━━━◇
+Link NTLS    :
+<code>${trojan3}</code>
 ◇━━━━━━━━━━━━━━━━━◇
 Link TLS    :
 <code>${trojan2}</code>
@@ -245,11 +255,16 @@ echo -ne
 else
 echo -e "$COLOR1 ${NC} ${WH}Quota Limit  ${COLOR1}: ${WH}${Quota} GB" | tee -a /etc/trojan/akun/log-create-${user}.log
 fi
+echo -e "$COLOR1 ${NC} ${WH}Port NTLS    ${COLOR1}: ${WH}80" | tee -a /etc/trojan/akun/log-create-${user}.log
 echo -e "$COLOR1 ${NC} ${WH}Port TLS     ${COLOR1}: ${WH}443" | tee -a /etc/trojan/akun/log-create-${user}.log
 echo -e "$COLOR1 ${NC} ${WH}Port gRPC    ${COLOR1}: ${WH}443" | tee -a /etc/trojan/akun/log-create-${user}.log
 echo -e "$COLOR1 ${NC} ${WH}Key          ${COLOR1}: ${WH}${uuid}" | tee -a /etc/trojan/akun/log-create-${user}.log
+echo -e "$COLOR1 ${NC} ${WH}Path NTLS    ${COLOR1}: ${WH}/trojan-ntls" | tee -a /etc/trojan/akun/log-create-${user}.log
 echo -e "$COLOR1 ${NC} ${WH}Path WS      ${COLOR1}: ${WH}/trojan-ws" | tee -a /etc/trojan/akun/log-create-${user}.log
 echo -e "$COLOR1 ${NC} ${WH}Path gRPC    ${COLOR1}: ${WH}/trojan-grpc" | tee -a /etc/trojan/akun/log-create-${user}.log
+echo -e "$COLOR1 ◇━━━━━━━━━━━━━━━━━◇ ${NC}" | tee -a /etc/trojan/akun/log-create-${user}.log
+echo -e "$COLOR1 ${NC} ${WH}Link NTLS    ${COLOR1}: " | tee -a /etc/trojan/akun/log-create-${user}.log
+echo -e "$COLOR1 ${NC} ${WH}${trojanlink2}" | tee -a /etc/trojan/akun/log-create-${user}.log
 echo -e "$COLOR1 ◇━━━━━━━━━━━━━━━━━◇ ${NC}" | tee -a /etc/trojan/akun/log-create-${user}.log
 echo -e "$COLOR1 ${NC} ${WH}Link TLS     ${COLOR1}: " | tee -a /etc/trojan/akun/log-create-${user}.log
 echo -e "$COLOR1 ${NC} ${WH}${trojanlink}" | tee -a /etc/trojan/akun/log-create-${user}.log
@@ -702,85 +717,75 @@ arg="$prev"
 done
 echo "$inu"
 }
-
-
-# Function to convert bytes to human-readable format
 function convert() {
-  local -i bytes=$1
-  if [[ $bytes -lt 1024 ]]; then
-    echo "${bytes} B"
-  elif [[ $bytes -lt 1048576 ]]; then
-    echo "$(((bytes + 1023) / 1024)) KB"
-  elif [[ $bytes -lt 1073741824 ]]; then
-    echo "$(((bytes + 1048575) / 1048576)) MB"
-  else
-    echo "$(((bytes + 1073741823) / 1073741824)) GB"
-  fi
+local -i bytes=$1
+if [[ $bytes -lt 1024 ]]; then
+echo "${bytes} B"
+elif [[ $bytes -lt 1048576 ]]; then
+echo "$(((bytes + 1023) / 1024)) KB"
+elif [[ $bytes -lt 1073741824 ]]; then
+echo "$(((bytes + 1048575) / 1048576)) MB"
+else
+echo "$(((bytes + 1073741823) / 1073741824)) GB"
+fi
 }
-
-# Function to display limit
-function display_limit() {
-  local limit=$1
-  if [[ ${limit} == "0" || ${limit} == "9999" ]]; then
-    echo "Unlimited"
-  else
-    echo "$((limit / 1073741824)) GB"  # Convert bytes to GB
-  fi
+function cek-tr(){
+clear
+xrayy=$(cat /var/log/xray/access.log | wc -l)
+if [[ xrayy -le 5 ]]; then
+systemctl restart xray
+fi
+xraylimit
+echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
+echo -e "$COLOR1│${NC}${COLBG1}             ${WH}• TROJAN USER ONLINE •              ${NC}$COLOR1│ $NC"
+echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
+echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
+vm=($(cat /etc/xray/config.json | grep "^#trg" | awk '{print $2}' | sort -u))
+echo -n >/tmp/vm
+for db1 in ${vm[@]}; do
+logvm=$(cat /var/log/xray/access.log | grep -w "email: ${db1}" | tail -n 100)
+while read a; do
+if [[ -n ${a} ]]; then
+set -- ${a}
+ina="${7}"
+inu="${2}"
+anu="${3}"
+enu=$(echo "${anu}" | sed 's/tcp://g' | sed '/^$/d' | cut -d. -f1,2,3)
+now=$(tim2sec ${timenow})
+client=$(tim2sec ${inu})
+nowt=$(((${now} - ${client})))
+if [[ ${nowt} -lt 40 ]]; then
+cat /tmp/vm | grep -w "${ina}" | grep -w "${enu}" >/dev/null
+if [[ $? -eq 1 ]]; then
+echo "${ina} ${inu} WIB : ${enu}" >>/tmp/vm
+splvm=$(cat /tmp/vm)
+fi
+fi
+fi
+done <<<"${logvm}"
+done
+if [[ ${splvm} != "" ]]; then
+for vmuser in ${vm[@]}; do
+vmhas=$(cat /tmp/vm | grep -w "${vmuser}" | wc -l)
+tess=0
+if [[ ${vmhas} -gt $tess ]]; then
+byt=$(cat /etc/limit/trojan/${vmuser})
+gb=$(convert ${byt})
+lim=$(cat /etc/trojan/${vmuser})
+lim2=$(convert ${lim})
+echo -e "$COLOR1${NC} USERNAME : \033[0;33m$vmuser"
+echo -e "$COLOR1${NC} IP LOGIN : \033[0;33m$vmhas"
+echo -e "$COLOR1${NC} USAGE : \033[0;33m$gb"
+echo -e "$COLOR1${NC} LIMIT : \033[0;33m$lim2"
+echo -e ""
+fi
+done
+fi
+echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
+echo ""
+read -n 1 -s -r -p "   Press any key to back on menu"
+m-trojan
 }
-
-# Function to check if a user is online
-function is_online() {
-  local user=$1
-  # Check if user has recent activity in the log
-  if grep -q "email: ${user}" /var/log/xray/access.log; then
-    return 0  # Online
-  else
-    return 1  # Offline
-  fi
-}
-
-# Function to handle Trojan users
-function cek-tr() {
-  clear
-  echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-  echo -e "$COLOR1│${NC}${COLBG1}             ${WH}• TROJAN USER ONLINE •              ${NC}$COLOR1│ $NC"
-  echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-  echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-
-  TROJAN_USERS=($(grep "^#trg" /etc/xray/config.json | awk '{print $2}' | sort -u))
-  ONLINE_USERS=()
-
-  for USER in "${TROJAN_USERS[@]}"; do
-    if is_online "${USER}"; then
-      ONLINE_USERS+=("${USER}")
-    fi
-  done
-
-  if [[ ${#ONLINE_USERS[@]} -gt 0 ]]; then
-    for USER in "${ONLINE_USERS[@]}"; do
-      IP_COUNT=$(grep -w "email: ${USER}" /var/log/xray/access.log | awk '{print $7}' | sort -u | wc -l)
-      TRAFFIC=$(xray api stats --server=127.0.0.1:10085 -name "user>>>${USER}>>>traffic>>>downlink" 2>/dev/null | grep -w "value" | awk '{print $2}' | cut -d '"' -f2)
-      TRAFFIC=${TRAFFIC:-0}
-      GB=$(convert ${TRAFFIC})
-      LIMIT=$(cat /etc/trojan/${USER} 2>/dev/null || echo "0")
-      LIMIT_DISPLAY=$(display_limit ${LIMIT})
-
-      echo -e "$COLOR1${NC} USERNAME : \033[0;33m$USER"
-      echo -e "$COLOR1${NC} IP LOGIN : \033[0;33m$IP_COUNT"
-      echo -e "$COLOR1${NC} USAGE : \033[0;33m$GB"
-      echo -e "$COLOR1${NC} LIMIT : \033[0;33m$LIMIT_DISPLAY"
-      echo -e ""
-    done
-  else
-    echo -e "$COLOR1${NC} No TROJAN users online."
-  fi
-
-  echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-  echo ""
-  read -n 1 -s -r -p "   Press any key to back on menu"
-  m-trojan
-}
-
 function list-trojan(){
 clear
 NUMBER_OF_CLIENTS=$(grep -c -E "^#tr " "/etc/xray/config.json")
