@@ -379,7 +379,7 @@ function trojan() {
       fi
 
       if [[ ${trip} -gt ${sadsde} ]]; then
-        byt=$(cat /etc/limit/trojan/${usrtr})
+        byt=$(cat /etc/limit/trojan/${usrtr} 2>/dev/null || echo 0)
         gb=$(convert ${byt})
         echo "${usrtr} ${trip}" >> /etc/trojan/${usrtr}login
         trojanip=$(cat /etc/trojan/${usrtr}login | wc -l)
