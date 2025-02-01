@@ -304,6 +304,10 @@ fi
 function tim2sec() {
   local time=$1
   IFS=':' read -r h m s <<< "$time"
+  # Hilangkan leading zero dari jam, menit, dan detik
+  h=$((10#$h))
+  m=$((10#$m))
+  s=$((10#$s))
   echo $((h * 3600 + m * 60 + s))
 }
 
