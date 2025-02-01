@@ -301,188 +301,163 @@ done
 fi
 }
 function trojan() {
-cd
-if [[ ! -e /etc/limit/trojan ]]; then
-mkdir -p /etc/limit/trojan
-fi
-trda=($(cat /etc/xray/config.json | grep "^#trg" | awk '{print $2}' | sort -u))
-echo -n >/tmp/tr
-for db3 in ${trda[@]}; do
-logtr=$(cat /var/log/xray/access.log | grep -w "email: ${db3}" | tail -n 150)
-while read a; do
-if [[ -n ${a} ]]; then
-set -- ${a}
-ina="${7}"
-inu="${2}"
-anu="${3}"
-enu=$(echo "${anu}" | sed 's/tcp://g' | sed '/^$/d' | cut -d. -f1,2,3)
-now=$(tim2sec ${timenow})
-client=$(tim2sec ${inu})
-nowt=$(((${now} - ${client})))
-if [[ ${nowt} -lt 40 ]]; then
-cat /tmp/tr | grep -w "${ina}" | grep -w "${enu}" >/dev/null
-if [[ $? -eq 1 ]]; then
-echo "${ina} ${inu} WIB : ${enu}" >>/tmp/tr
-restr=$(cat /tmp/tr)
-fi
-fi
-fi
-done <<<"${logtr}"
-done
-if [[ ${restr} != "" ]]; then
-for usrtr in ${trda[@]}; do
-trip=$(cat /tmp/tr | grep -w "${usrtr}" | wc -l)
-trip2=$(cat /tmp/tr | grep -w "${usrtr}" | cut -d ' ' -f 2-8 | nl -s '. ' | while read line; do printf "%-20s\n" "$line"; done )
-sdf=$(ls "/etc/trojan" | grep -w "${usrtr}IP")
-if [[ -z ${sdf} ]]; then
-sadsde="0"
-else
-sadsde=$(cat /etc/trojan/${usrtr}IP)
-fi
-if [[ ${trip} -gt "0" ]]; then
-downlink=$(xray api stats --server=127.0.0.1:10085 -name "user>>>${usrtr}>>>traffic>>>downlink" | grep -w "value" | awk '{print $2}' | cut -d '"' -f2)
-cd
-if [ ! -e /etc/limit/trojan/$usrtr ]; then
-echo "${downlink}" > /etc/limit/trojan/${usrtr}
-xray api stats --server=127.0.0.1:10085 -name "user>>>${usrtr}>>>traffic>>>downlink" -reset > /dev/null 2>&1
-else
-plus2=$(cat /etc/limit/trojan/$usrtr)
-if [[ -z ${plus2} ]]; then
-echo "1" > /etc/limit/trojan/$usrtr
-fi
-plus3=$(( ${downlink} + ${plus2} ))
-echo "${plus3}" > /etc/limit/trojan/${usrtr}
-xray api stats --server=127.0.0.1:10085 -name "user>>>${usrtr}>>>traffic>>>downlink" -reset > /dev/null 2>&1
-fi
-if [ ! -e /etc/trojan/${usrtr} ]; then
-echo "999999999999" > /etc/trojan/${usrtr}
-fi
-limit=$(cat /etc/trojan/${usrtr})
-usage=$(cat /etc/limit/trojan/${usrtr})
-if [ $usage -gt $limit ]; then
-exptr=$(grep -wE "^#tr $usrtr" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
-uuidtr=$(grep -wE "^#tr $usrtr" "/etc/xray/config.json" | cut -d ' ' -f 4 | sort | uniq)
-echo "### $usrtr $exptr $uuidtr" >> /etc/trojan/userQuota
-sed -i "/^#tr $usrtr $exptr/,/^},{/d" /etc/xray/config.json
-sed -i "/^#trg $usrtr $exptr/,/^},{/d" /etc/xray/config.json
-rm /etc/limit/trojan/${usrtr} >/dev/null 2>&1
-systemctl restart xray >/dev/null 2>&1
-fi
-fi
-if [[ ${trip} -gt $sadsde ]]; then
-byt=$(cat /etc/limit/trojan/$usrtr)
-gb=$(convert ${byt})
-echo "$usrtr ${trip}" >> /etc/trojan/${usrtr}login
-trojanip=$(cat /etc/trojan/${usrtr}login | wc -l)
-sstrojan1=$(ls "/etc/trojan" | grep -w "notif")
-if [[ -z ${sstrojan1} ]]; then
-sstrojan="3"
-else
-sstrojan=$(cat /etc/trojan/notif)
-fi
-if [ $trojanip = $sstrojan ]; then
-echo -ne
-if [ $type = "delete" ]; then
-TEXT2="
+  cd
+  if [[ ! -e /etc/limit/trojan ]]; then
+    mkdir -p /etc/limit/trojan
+  fi
+
+  trda=($(cat /etc/xray/config.json | grep "^#trg" | awk '{print $2}' | sort -u))
+  echo -n > /tmp/tr
+
+  for db3 in "${trda[@]}"; do
+    logtr=$(cat /var/log/xray/access.log | grep -w "email: ${db3}" | tail -n 150)
+    while read -r a; do
+      if [[ -n ${a} ]]; then
+        set -- ${a}
+        ina="${7}"
+        inu="${2}"
+        anu="${3}"
+        enu=$(echo "${anu}" | sed 's/tcp://g' | sed '/^$/d' | cut -d. -f1,2,3)
+
+        # Convert time to seconds using custom function
+        now=$(date +%s)
+        client=$(date -d "${inu}" +%s 2>/dev/null || echo 0)
+        nowt=$((now - client))
+
+        if [[ ${nowt} -lt 40 ]]; then
+          if ! grep -qw "${ina}" /tmp/tr; then
+            echo "${ina} ${inu} WIB : ${enu}" >> /tmp/tr
+          fi
+        fi
+      fi
+    done <<< "${logtr}"
+  done
+
+  if [[ -s /tmp/tr ]]; then
+    for usrtr in "${trda[@]}"; do
+      trip=$(grep -w "${usrtr}" /tmp/tr | wc -l)
+      trip2=$(grep -w "${usrtr}" /tmp/tr | cut -d ' ' -f 2-8 | nl -s '. ' | while read line; do printf "%-20s\n" "$line"; done)
+
+      sdf=$(ls "/etc/trojan" | grep -w "${usrtr}IP")
+      if [[ -z ${sdf} ]]; then
+        sadsde="0"
+      else
+        sadsde=$(cat /etc/trojan/${usrtr}IP)
+      fi
+
+      if [[ ${trip} -gt "0" ]]; then
+        downlink=$(xray api stats --server=127.0.0.1:10085 -name "user>>>${usrtr}>>>traffic>>>downlink" | grep -w "value" | awk '{print $2}' | cut -d '"' -f2)
+        cd
+        if [[ ! -e /etc/limit/trojan/${usrtr} ]]; then
+          echo "${downlink}" > /etc/limit/trojan/${usrtr}
+          xray api stats --server=127.0.0.1:10085 -name "user>>>${usrtr}>>>traffic>>>downlink" -reset > /dev/null 2>&1
+        else
+          plus2=$(cat /etc/limit/trojan/${usrtr})
+          if [[ -z ${plus2} ]]; then
+            echo "1" > /etc/limit/trojan/${usrtr}
+          fi
+          plus3=$((downlink + plus2))
+          echo "${plus3}" > /etc/limit/trojan/${usrtr}
+          xray api stats --server=127.0.0.1:10085 -name "user>>>${usrtr}>>>traffic>>>downlink" -reset > /dev/null 2>&1
+        fi
+
+        if [[ ! -e /etc/trojan/${usrtr} ]]; then
+          echo "999999999999" > /etc/trojan/${usrtr}
+        fi
+
+        limit=$(cat /etc/trojan/${usrtr})
+        usage=$(cat /etc/limit/trojan/${usrtr})
+        if [[ ${usage} -gt ${limit} ]]; then
+          exptr=$(grep -wE "^#tr ${usrtr}" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
+          uuidtr=$(grep -wE "^#tr ${usrtr}" "/etc/xray/config.json" | cut -d ' ' -f 4 | sort | uniq)
+          echo "### ${usrtr} ${exptr} ${uuidtr}" >> /etc/trojan/userQuota
+          sed -i "/^#tr ${usrtr} ${exptr}/,/^},{/d" /etc/xray/config.json
+          sed -i "/^#trg ${usrtr} ${exptr}/,/^},{/d" /etc/xray/config.json
+          rm -f /etc/limit/trojan/${usrtr} > /dev/null 2>&1
+          systemctl restart xray > /dev/null 2>&1
+        fi
+      fi
+
+      if [[ ${trip} -gt ${sadsde} ]]; then
+        byt=$(cat /etc/limit/trojan/${usrtr})
+        gb=$(convert ${byt})
+        echo "${usrtr} ${trip}" >> /etc/trojan/${usrtr}login
+        trojanip=$(cat /etc/trojan/${usrtr}login | wc -l)
+        sstrojan1=$(ls "/etc/trojan" | grep -w "notif")
+        if [[ -z ${sstrojan1} ]]; then
+          sstrojan="3"
+        else
+          sstrojan=$(cat /etc/trojan/notif)
+        fi
+
+        if [[ ${trojanip} -eq ${sstrojan} ]]; then
+          if [[ ${TYPE} == "delete" ]]; then
+            TEXT2="
 <code>◇━━━━━━━━━━━━━━◇</code>
 <b> ⚠️ TROJAN MULTI LOGIN </b>
 <code>◇━━━━━━━━━━━━━━◇</code>
-<b>DOMAIN : ${domen} </b>
+<b>DOMAIN : ${DOMAIN} </b>
 <b>ISP : ${ISP}</b>
 <b>CITY : ${CITY}</b>
-<b>DATE LOGIN : $DATE</b>
-<b>USERNAME : $usrtr </b>
+<b>DATE LOGIN : ${DATE}</b>
+<b>USERNAME : ${usrtr} </b>
 <b>TOTAL LOGIN IP : ${trip} </b>
 <b>USAGE : ${gb} </b>
 <code>◇━━━━━━━━━━━━━━◇</code>
 <b>⚠️ TIME LOGIN : IP LOGIN </b>
 <code>◇━━━━━━━━━━━━━━◇</code>
-<code>$trip2</code>
+<code>${trip2}</code>
 <code>◇━━━━━━━━━━━━━━◇</code>
-<i>${sstrojan}x Multi Login Auto Lock Account...</i>
-"
-echo "" > /tmp/tr
-sed -i "/${usrtr}/d" /var/log/xray/access.log
-curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT2&parse_mode=html" $URL >/dev/null
-exptr=$(grep -wE "^#tr $usrtr" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
-uuidtr=$(grep -wE "^#tr $usrtr" "/etc/xray/config.json" | cut -d ' ' -f 4 | sort | uniq)
-echo "### $usrtr $exptr $uuidtr" >> /etc/trojan/listlock
-sed -i "/^#tr $usrtr $exptr/,/^},{/d" /etc/xray/config.json
-sed -i "/^#trg $usrtr $exptr/,/^},{/d" /etc/xray/config.json
-rm /etc/trojan/${usrtr}login >/dev/null 2>&1
-systemctl restart xray >/dev/null 2>&1
-fi
-if [ $type = "lock" ]; then
-TEXT2="
+<i>${sstrojan}x Multi Login Auto Lock Account...</i>"
+            echo "" > /tmp/tr
+            sed -i "/${usrtr}/d" /var/log/xray/access.log
+            curl -s --max-time ${TIMES} -d "chat_id=${CHATID}&disable_web_page_preview=1&text=${TEXT2}&parse_mode=html" ${URL} > /dev/null
+            exptr=$(grep -wE "^#tr ${usrtr}" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
+            uuidtr=$(grep -wE "^#tr ${usrtr}" "/etc/xray/config.json" | cut -d ' ' -f 4 | sort | uniq)
+            echo "### ${usrtr} ${exptr} ${uuidtr}" >> /etc/trojan/listlock
+            sed -i "/^#tr ${usrtr} ${exptr}/,/^},{/d" /etc/xray/config.json
+            sed -i "/^#trg ${usrtr} ${exptr}/,/^},{/d" /etc/xray/config.json
+            rm -f /etc/trojan/${usrtr}login > /dev/null 2>&1
+            systemctl restart xray > /dev/null 2>&1
+          elif [[ ${TYPE} == "lock" ]]; then
+            TEXT2="
 <code>◇━━━━━━━━━━━━━━◇</code>
 <b> ⚠️ TROJAN MULTI LOGIN </b>
 <code>◇━━━━━━━━━━━━━━◇</code>
-<b>DOMAIN : ${domen} </b>
+<b>DOMAIN : ${DOMAIN} </b>
 <b>ISP : ${ISP}</b>
 <b>CITY : ${CITY}</b>
-<b>DATE LOGIN : $DATE</b>
-<b>USERNAME : $usrtr </b>
+<b>DATE LOGIN : ${DATE}</b>
+<b>USERNAME : ${usrtr} </b>
 <b>TOTAL LOGIN IP : ${trip} </b>
 <b>USAGE : ${gb} </b>
 <code>◇━━━━━━━━━━━━━━◇</code>
 <b>⚠️ TIME LOGIN : IP LOGIN </b>
 <code>◇━━━━━━━━━━━━━━◇</code>
-<code>$trip2</code>
+<code>${trip2}</code>
 <code>◇━━━━━━━━━━━━━━◇</code>
-<i>${sstrojan}x Multi Login Lock Account $waktulock Minutes...</i>
-"
-echo "" > /tmp/tr
-sed -i "/${usrtr}/d" /var/log/xray/access.log
-curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT2&parse_mode=html" $URL >/dev/null
-exptr=$(grep -wE "^#tr $usrtr" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
-uuidtr=$(grep -wE "^#tr $usrtr" "/etc/xray/config.json" | cut -d ' ' -f 4 | sort | uniq)
-echo "### $usrtr $exptr $uuidtr" >> /etc/trojan/listlock
-sed -i "/^#tr $usrtr $exptr/,/^},{/d" /etc/xray/config.json
-sed -i "/^#trg $usrtr $exptr/,/^},{/d" /etc/xray/config.json
-rm /etc/trojan/${usrtr}login >/dev/null 2>&1
-cat> /etc/cron.d/trojan${usrtr} << EOF
+<i>${sstrojan}x Multi Login Lock Account ${WAKTULOCK} Minutes...</i>"
+            echo "" > /tmp/tr
+            sed -i "/${usrtr}/d" /var/log/xray/access.log
+            curl -s --max-time ${TIMES} -d "chat_id=${CHATID}&disable_web_page_preview=1&text=${TEXT2}&parse_mode=html" ${URL} > /dev/null
+            exptr=$(grep -wE "^#tr ${usrtr}" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
+            uuidtr=$(grep -wE "^#tr ${usrtr}" "/etc/xray/config.json" | cut -d ' ' -f 4 | sort | uniq)
+            echo "### ${usrtr} ${exptr} ${uuidtr}" >> /etc/trojan/listlock
+            sed -i "/^#tr ${usrtr} ${exptr}/,/^},{/d" /etc/xray/config.json
+            sed -i "/^#trg ${usrtr} ${exptr}/,/^},{/d" /etc/xray/config.json
+            rm -f /etc/trojan/${usrtr}login > /dev/null 2>&1
+            cat > /etc/cron.d/trojan${usrtr} << EOF
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-*/$waktulock * * * * root /usr/bin/xray trojan $usrtr $uuidtr $exptr
+*/${WAKTULOCK} * * * * root /usr/bin/xray trojan ${usrtr} ${uuidtr} ${exptr}
 EOF
-systemctl restart xray
-service cron restart
-fi
-else
-TEXT="
-<code>◇━━━━━━━━━━━━━━◇</code>
-<b> ⚠️ TROJAN MULTI LOGIN </b>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<b>DOMAIN : ${domen} </b>
-<b>ISP : ${ISP}</b>
-<b>CITY : ${CITY}</b>
-<b>DATE LOGIN : $DATE</b>
-<b>USERNAME : $usrtr </b>
-<b>TOTAL LOGIN IP : ${trip} </b>
-<b>USAGE : ${gb} </b>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<b>⚠️ TIME LOGIN : IP LOGIN </b>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<code>$trip2</code>
-<code>◇━━━━━━━━━━━━━━◇</code>
-<i>${trojanip}x Multi Login : ${sstrojan}x Multi Login Auto Lock Account...</i>
-"
-echo "" > /tmp/tr
-sed -i "/${usrtr}/d" /var/log/xray/access.log
-curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT&parse_mode=html" $URL >/dev/null
-fi
-if [ $trojanip -gt $sstrojan ]; then
-exptr=$(grep -wE "^#tr $usrtr" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
-uuidtr=$(grep -wE "^#tr $usrtr" "/etc/xray/config.json" | cut -d ' ' -f 4 | sort | uniq)
-echo "### $usrtr $exptr $uuidtr" >> /etc/trojan/listlock
-sed -i "/^#tr $usrtr $exptr/,/^},{/d" /etc/xray/config.json
-sed -i "/^#trg $usrtr $exptr/,/^},{/d" /etc/xray/config.json
-rm /etc/trojan/${usrtr}login >/dev/null 2>&1
-systemctl restart xray >/dev/null 2>&1
-fi
-fi
-done
-fi
+            systemctl restart xray
+            service cron restart
+          fi
+        fi
+      fi
+    done
+  fi
 }
 ####### TROJAN-GO #######
 function trojan-go() {
