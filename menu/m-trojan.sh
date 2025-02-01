@@ -727,6 +727,17 @@ function display_limit() {
   fi
 }
 
+# Function to check if a user is online
+function is_online() {
+  local user=$1
+  # Check if user has recent activity in the log
+  if grep -q "email: ${user}" /var/log/xray/access.log; then
+    return 0  # Online
+  else
+    return 1  # Offline
+  fi
+}
+
 # Function to handle Trojan users
 function cek-tr() {
   clear
@@ -739,8 +750,7 @@ function cek-tr() {
   ONLINE_USERS=()
 
   for USER in "${TROJAN_USERS[@]}"; do
-    # Check if user has recent activity in the log
-    if grep -q "email: ${USER}" /var/log/xray/access.log; then
+    if is_online "${USER}"; then
       ONLINE_USERS+=("${USER}")
     fi
   done
