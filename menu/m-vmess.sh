@@ -45,59 +45,26 @@ cd
 if [ ! -e /etc/vmess/akun ]; then
 mkdir -p /etc/vmess/akun
 fi
-function add-vmess() {
-  clear
-  until [[ $user =~ ^[a-zA-Z0-9_.-]+$ && ${CLIENT_EXISTS} == '0' ]]; do
-    echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-    echo -e "$COLOR1│${NC} ${COLBG1}            ${WH}• Add Vmess Account •              ${NC} $COLOR1│ $NC"
-    echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-    echo -e ""
-    read -rp "   User: " -e user
-    CLIENT_EXISTS=$(grep -w $user /etc/xray/config.json | wc -l)
-    if [[ ${CLIENT_EXISTS} == '1' ]]; then
-      clear
-      echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-      echo -e "$COLOR1│ ${NC} ${COLBG1}            ${WH}• Add Vmess Account •             ${NC} $COLOR1│ $NC"
-      echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-      echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-      echo -e "$COLOR1│                                                 │"
-      echo -e "$COLOR1│${WH} Nama Duplikat Silahkan Buat Nama Lain.          $COLOR1│"
-      echo -e "$COLOR1│                                                 │"
-      echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-      read -n 1 -s -r -p "   Press any key to back"
-      add-vmess
-      return
-    fi
-  done
-
-  UUID=$(cat /proc/sys/kernel/random/uuid)
-  echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-  echo -e "$COLOR1│${NC} ${COLBG1}            ${WH}• Add Vmess Account •              ${NC} $COLOR1│ $NC"
-  echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-  echo -e ""
-  read -p "   Expired (days): " MASA_AKTIF
-  EXP=$(date -d "$MASA_AKTIF days" +"%Y-%m-%d")
-  read -p "   Limit IP: " IP_LIMIT
-  read -p "   Limit Quota (GB): " QUOTA
-
-  # Add user to Xray config
-  sed -i '/#vmess$/a\#vm '"$user $EXP"'\
-  },{"id": "'"$UUID"'","alterId": 0,"email": "'"$user"'"' /etc/xray/config.json
-
-  # Save IP limit and quota
-  echo "$IP_LIMIT" > /etc/vmess/${user}IP
-  echo "$((QUOTA * 1024 * 1024 * 1024))" > /etc/vmess/${user}
-
-  # Restart Xray
-  systemctl restart xray
-
-  echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-  echo -e "$COLOR1│${NC} ${COLBG1}            ${WH}• Add Vmess Account •              ${NC} $COLOR1│ $NC"
-  echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-  echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
-  echo -e "$COLOR1│${WH} User ${user} added successfully.                  ${NC} $COLOR1│"
-  echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
-  read -n 1 -s -r -p "   Press any key to back"
+function add-vmess(){
+clear
+until [[ $user =~ ^[a-zA-Z0-9_.-]+$ && ${CLIENT_EXISTS} == '0' ]]; do
+echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
+echo -e "$COLOR1│${NC} ${COLBG1}            ${WH}• Add Vmess Account •              ${NC} $COLOR1│ $NC"
+echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
+echo -e ""
+read -rp "User: " -e user
+CLIENT_EXISTS=$(grep -w $user /etc/xray/config.json | wc -l)
+if [[ ${CLIENT_EXISTS} == '1' ]]; then
+clear
+echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
+echo -e "$COLOR1│ ${NC} ${COLBG1}            ${WH}• Add Vmess Account •             ${NC} $COLOR1│ $NC"
+echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
+echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
+echo -e "$COLOR1│                                                 │"
+echo -e "$COLOR1│${WH} Nama Duplikat Silahkan Buat Nama Lain.          $COLOR1│"
+echo -e "$COLOR1│                                                 │"
+echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
+read -n 1 -s -r -p "Press any key to back"
 }
 add-vmess
 fi
