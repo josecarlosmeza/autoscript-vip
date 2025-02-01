@@ -702,22 +702,6 @@ arg="$prev"
 done
 echo "$inu"
 }
-# Function to check if a user is online
-function is_online() {
-  local user=$1
-  local log_file="/var/log/xray/access.log"
-  local current_time=$(date +%s)
-  local last_activity=$(grep -w "email: ${user}" "${log_file}" | tail -n 1 | awk '{print $2}')
-  local last_activity_time=$(date -d "${last_activity}" +%s 2>/dev/null || echo 0)
-  local time_diff=$((current_time - last_activity_time))
-
-  # Consider user online if last activity was within the last 60 seconds
-  if [[ ${time_diff} -le 60 ]]; then
-    return 0  # Online
-  else
-    return 1  # Offline
-  fi
-}
 # Function to convert bytes to human-readable format
 function convert() {
   local -i bytes=$1
@@ -731,6 +715,34 @@ function convert() {
     echo "$(((bytes + 1073741823) / 1073741824)) GB"
   fi
 }
+
+# Function to check if a user is online
+function is_online() {
+  local user=$1
+  local log_file="/var/log/xray/access.log"
+  local current_time=$(date +%s)
+  local last_activity=$(grep -w "email: ${user}" "${log_file}" | tail -n 1 | awk '{print $2}')
+  local last_activity_time=$(date -d "${last_activity}" +%s 2>/dev/null || echo 0)
+  local time_diff=$((current_time - last_activity_time))
+
+  # Consider user online if last activity was within the last 2 seconds
+  if [[ ${time_diff} -le 2 ]]; then
+    return 0  # Online
+  else
+    return 1  # Offline
+  fi
+}
+
+# Function to display limit
+function display_limit() {
+  local limit=$1
+  if [[ ${limit} == "0" || ${limit} == "9999" ]]; then
+    echo "Unlimited"
+  else
+    echo "${limit} GB"
+  fi
+}
+
 # Function to handle Trojan users
 function cek-tr() {
   clear
@@ -754,12 +766,13 @@ function cek-tr() {
       TRAFFIC=$(xray api stats --server=127.0.0.1:10085 -name "user>>>${USER}>>>traffic>>>downlink" 2>/dev/null | grep -w "value" | awk '{print $2}' | cut -d '"' -f2)
       TRAFFIC=${TRAFFIC:-0}
       GB=$(convert ${TRAFFIC})
-      LIMIT=$(cat /etc/trojan/${USER} 2>/dev/null || echo "10 GB")
+      LIMIT=$(cat /etc/trojan/${USER} 2>/dev/null || echo "0")
+      LIMIT_DISPLAY=$(display_limit ${LIMIT})
 
       echo -e "$COLOR1${NC} USERNAME : \033[0;33m$USER"
       echo -e "$COLOR1${NC} IP LOGIN : \033[0;33m$IP_COUNT"
       echo -e "$COLOR1${NC} USAGE : \033[0;33m$GB"
-      echo -e "$COLOR1${NC} LIMIT : \033[0;33m$LIMIT"
+      echo -e "$COLOR1${NC} LIMIT : \033[0;33m$LIMIT_DISPLAY"
       echo -e ""
     done
   else
