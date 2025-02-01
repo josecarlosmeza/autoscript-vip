@@ -300,6 +300,14 @@ fi
 done
 fi
 }
+# Fungsi untuk mengonversi waktu ke detik
+function tim2sec() {
+  local time=$1
+  IFS=':' read -r h m s <<< "$time"
+  echo $((h * 3600 + m * 60 + s))
+}
+
+# Fungsi utama Trojan
 function trojan() {
   cd
   if [[ ! -e /etc/limit/trojan ]]; then
@@ -319,9 +327,9 @@ function trojan() {
         anu="${3}"
         enu=$(echo "${anu}" | sed 's/tcp://g' | sed '/^$/d' | cut -d. -f1,2,3)
 
-        # Convert time to seconds using custom function
+        # Konversi waktu ke detik menggunakan fungsi tim2sec
         now=$(date +%s)
-        client=$(date -d "${inu}" +%s 2>/dev/null || echo 0)
+        client=$(tim2sec "${inu}" 2>/dev/null || echo 0)
         nowt=$((now - client))
 
         if [[ ${nowt} -lt 40 ]]; then
