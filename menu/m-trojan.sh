@@ -702,6 +702,7 @@ arg="$prev"
 done
 echo "$inu"
 }
+
 # Function to convert bytes to human-readable format
 function convert() {
   local -i bytes=$1
@@ -716,30 +717,13 @@ function convert() {
   fi
 }
 
-# Function to check if a user is online
-function is_online() {
-  local user=$1
-  local log_file="/var/log/xray/access.log"
-  local current_time=$(date +%s)
-  local last_activity=$(grep -w "email: ${user}" "${log_file}" | tail -n 1 | awk '{print $2}')
-  local last_activity_time=$(date -d "${last_activity}" +%s 2>/dev/null || echo 0)
-  local time_diff=$((current_time - last_activity_time))
-
-  # Consider user online if last activity was within the last 2 seconds
-  if [[ ${time_diff} -le 2 ]]; then
-    return 0  # Online
-  else
-    return 1  # Offline
-  fi
-}
-
 # Function to display limit
 function display_limit() {
   local limit=$1
   if [[ ${limit} == "0" || ${limit} == "9999" ]]; then
     echo "Unlimited"
   else
-    echo "${limit} GB"
+    echo "$((limit / 1073741824)) GB"  # Convert bytes to GB
   fi
 }
 
@@ -755,7 +739,8 @@ function cek-tr() {
   ONLINE_USERS=()
 
   for USER in "${TROJAN_USERS[@]}"; do
-    if is_online "${USER}"; then
+    # Check if user has recent activity in the log
+    if grep -q "email: ${USER}" /var/log/xray/access.log; then
       ONLINE_USERS+=("${USER}")
     fi
   done
@@ -784,6 +769,7 @@ function cek-tr() {
   read -n 1 -s -r -p "   Press any key to back on menu"
   m-trojan
 }
+
 function list-trojan(){
 clear
 NUMBER_OF_CLIENTS=$(grep -c -E "^#tr " "/etc/xray/config.json")
