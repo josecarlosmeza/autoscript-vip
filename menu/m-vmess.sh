@@ -45,7 +45,7 @@ cd
 if [ ! -e /etc/vmess/akun ]; then
 mkdir -p /etc/vmess/akun
 fi
-function add-vmess() {
+function add-vmess(){
 clear
 until [[ $user =~ ^[a-zA-Z0-9_.-]+$ && ${CLIENT_EXISTS} == '0' ]]; do
 echo -e "$COLOR1╭═════════════════════════════════════════════════╮${NC}"
@@ -65,7 +65,6 @@ echo -e "$COLOR1│${WH} Nama Duplikat Silahkan Buat Nama Lain.          $COLOR1
 echo -e "$COLOR1│                                                 │"
 echo -e "$COLOR1╰═════════════════════════════════════════════════╯${NC}"
 read -n 1 -s -r -p "Press any key to back"
-}
 add-vmess
 fi
 done
