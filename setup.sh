@@ -80,9 +80,9 @@ if [[ "1" == "1" ]]; then
 MYIP=$(curl -sS ipv4.icanhazip.com)
 rm -rf /etc/github
 mkdir /etc/github
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/api
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/email
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/username
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/api
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/email
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/username
 clear
 APIGIT=$(cat /etc/github/api)
 EMAILGIT=$(cat /etc/github/email)
@@ -127,9 +127,9 @@ if [[ "2" == "2" ]]; then
 MYIP=$(curl -sS ipv4.icanhazip.com)
 rm -rf /etc/github
 mkdir /etc/github
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/api
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/email
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/username
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/api
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/email
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/username
 clear
 APIGIT=$(cat /etc/github/api)
 EMAILGIT=$(cat /etc/github/email)
@@ -158,9 +158,9 @@ MYIP2=$(curl -sS ipv4.icanhazip.com)
 author2=$(cat /etc/profil)
 rm -rf /etc/github
 mkdir /etc/github
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/api
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/email
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/username
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/api
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/email
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/username
 clear
 APIGIT=$(cat /etc/github/api)
 EMAILGIT=$(cat /etc/github/email)
@@ -189,9 +189,9 @@ MYIP3=$(curl -sS ipv4.icanhazip.com)
 author3=$(cat /etc/profil)
 rm -rf /etc/github
 mkdir /etc/github
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/api
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/email
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/username
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/api
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/email
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/username
 clear
 APIGIT=$(cat /etc/github/api)
 EMAILGIT=$(cat /etc/github/email)
@@ -219,9 +219,9 @@ elif [[ "2" == "2" ]]; then
 MYIP=$(curl -sS ipv4.icanhazip.com)
 rm -rf /etc/github
 mkdir /etc/github
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/api
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/email
-curl -s https://pastebin.com/raw/mN43jRZg > /etc/github/username
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/api
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/email
+curl -s https://pastebin.com/raw/tFGB7V9p > /etc/github/username
 clear
 APIGIT=$(cat /etc/github/api)
 EMAILGIT=$(cat /etc/github/email)
@@ -707,8 +707,8 @@ clear
 function iinfo(){
 domain=$(cat /etc/xray/domain)
 TIMES="10"
-CHATID="0000000000"
-KEY="0000000000:00000000000000000000000000000000000"
+CHATID="7417223697"
+KEY="7870078180:AAEyHOqintCIVFtOchdwkUmj9r4-KeLKWKk"
 URL="https://api.telegram.org/bot$KEY/sendMessage"
 ISP=$(cat /etc/xray/isp)
 CITY=$(cat /etc/xray/city)
