@@ -14,17 +14,16 @@ ISP=$(cat /etc/xray/isp)
 CITY=$(cat /etc/xray/city)
 author=$(cat /etc/profil)
 DATE2=$(date -R | cut -d " " -f -5)
-Exp2=$(curl -sS https://raw.githubusercontent.com/jvoscript/permission/main/ip | grep $MYIP | awk '{print $3}')
+Exp2=$(curl -sS https://raw.githubusercontent.com/josecarlosmeza/permission/main/ip | grep $MYIP | awk '{print $3}')
 export RED='\033[0;31m'
 export GREEN='\033[0;32m'
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
-data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
-# Fungsi untuk mengecek dan melakukan pembaruan otomatis
+data_ip="https://raw.githubusercontent.com/josecarlosmeza/permission/main/ip"
 function check_and_update() {
     # Mendapatkan commit terbaru dari repository GitHub
-    latest_commit=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
-    commit_messages=$(curl -s https://api.github.com/repos/jvoscript/autoscript-vip/commits/main | grep -oP '"message": "\K[^"]+')
+    latest_commit=$(curl -s https://api.github.com/repos/josecarlosmeza/autoscript-vip/commits/main | grep -oP '"sha": "\K[^"]+')
+    commit_messages=$(curl -s https://api.github.com/repos/josecarlosmeza/autoscript-vip/commits/main | grep -oP '"message": "\K[^"]+')
 
     # Mendapatkan commit terakhir yang disimpan di VPS
     if [ -f /etc/github/last_commit ]; then
@@ -62,7 +61,7 @@ function check_and_update() {
             echo "Updating script..."
 
             # Download dan jalankan script update
-            wget -q https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh -O m-update.sh
+            wget -q https://raw.githubusercontent.com/josecarlosmeza/autoscript-vip/main/m-update.sh -O m-update.sh
             chmod +x m-update.sh
             ./m-update.sh
 
@@ -74,30 +73,11 @@ function check_and_update() {
             echo "Update skipped."
         fi
     fi
+    # Jika tidak ada update, langsung kembali tanpa menampilkan pesan
 }
 
-# Fungsi untuk menjalankan pengecekan update setiap 1 menit
-function auto_check_update() {
-    while true; do
-        check_and_update
-        sleep 60  # Tunggu 1 menit sebelum pengecekan berikutnya
-    done
-}
-
-# Cek apakah tmux atau screen sudah terinstall
-if ! command -v tmux &> /dev/null && ! command -v screen &> /dev/null; then
-    echo "tmux atau screen tidak ditemukan. Menginstall tmux..."
-    apt-get update && apt-get install -y tmux
-fi
-
-# Jalankan pengecekan update dalam sesi tmux
-if command -v tmux &> /dev/null; then
-    tmux new-session -d -s update_checker "bash -c 'auto_check_update'"
-elif command -v screen &> /dev/null; then
-    screen -dmS update_checker bash -c 'auto_check_update'
-else
-    echo "Tidak dapat menjalankan pengecekan update di latar belakang. Pastikan tmux atau screen terinstall."
-fi
+# Mulai pengecekan update di background
+auto_check_update &
 checking_sc() {
 useexp=$(curl -sS $data_ip | grep $MYIP | awk '{print $3}')
 if [[ $date_list < $useexp ]]; then
@@ -490,7 +470,7 @@ menu
 function updatews(){
 cd
 rm -rf *
-wget https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/m-update.sh
+wget https://raw.githubusercontent.com/josecarlosmeza/autoscript-vip/main/m-update.sh
 clear
 chmod +x m-update.sh && ./m-update.sh
 }

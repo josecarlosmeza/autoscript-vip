@@ -9,7 +9,7 @@ WH='\033[1;37m'
 ipsaya=$(wget -qO- ifconfig.me)
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
-data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/ip"
+data_ip="https://raw.githubusercontent.com/josecarlosmeza/permission/main/ip"
 checking_sc() {
 useexp=$(curl -sS $data_ip | grep $ipsaya | awk '{print $3}')
 if [[ $date_list < $useexp ]]; then
@@ -56,18 +56,18 @@ echo -e "\033[0;33m]\033[1;37m -\033[1;32m Succes !\033[1;37m"
 tput cnorm
 }
 sldns() {
-wget https://raw.githubusercontent.com./jvoscript/autoscript/main/slowdns/ && chmod +x installsl.sh && ./installsl.sh
+wget https://raw.githubusercontent.com./josecarlosmeza/autoscript/main/slowdns/ && chmod +x installsl.sh && ./installsl.sh
 }
 res1() {
-wget https://raw.githubusercontent.com./jvoscript/autoscript/main/slowdns/ && chmod +x rmbl.sh && ./rmbl.sh
+wget https://raw.githubusercontent.com./josecarlosmeza/autoscript/main/slowdns/ && chmod +x rmbl.sh && ./rmbl.sh
 clear
 }
 res2() {
-wget https://raw.githubusercontent.com./jvoscript/autoscript/main/slowdns/ && chmod +x rmbl1.sh && ./rmbl1.sh
+wget https://raw.githubusercontent.com./josecarlosmeza/autoscript/main/slowdns/ && chmod +x rmbl1.sh && ./rmbl1.sh
 clear
 }
 res3() {
-wget https://raw.githubusercontent.com./jvoscript/autoscript/main/slowdns/ && chmod +x rmbl2.sh && ./rmbl2.sh
+wget https://raw.githubusercontent.com./josecarlosmeza/autoscript/main/slowdns/ && chmod +x rmbl2.sh && ./rmbl2.sh
 clear
 }
 clear
@@ -847,7 +847,7 @@ read -p "   Please select numbers 1-3 or Any Button(BACK) : " dobot
 done
 if [[ $dobot == "1" ]]; then
 clear
-wget https://raw.githubusercontent.com/jvoscript/autoscript-vip/main/dobot/install.sh &> /dev/null
+wget https://raw.githubusercontent.com/josecarlosmeza/autoscript-vip/main/dobot/install.sh &> /dev/null
 chmod +x install.sh
 bash install.sh
 rm -rf install.sh

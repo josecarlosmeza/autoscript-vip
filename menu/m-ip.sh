@@ -5,7 +5,7 @@ biji=`date +"%Y-%m-%d" -d "$dateFromServer"`
 ipsaya=$(wget -qO- ipinfo.io/ip)
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
-data_ip="https://raw.githubusercontent.com/jvoscript/permission/main/seler"
+data_ip="https://raw.githubusercontent.com/josecarlosmeza/permission/main/seler"
 checking_sc() {
   useexp=$(wget -qO- $data_ip | grep $ipsaya | awk '{print $3}')
   if [[ $date_list < $useexp ]]; then
@@ -27,7 +27,7 @@ menu
 }
 checking_sc
 clear
-Repo1="https://raw.githubusercontent.com/jvoscript/permission/main/"
+Repo1="https://raw.githubusercontent.com/josecarlosmeza/permission/main/"
 export MYIP=$( curl -s https://ipinfo.io/ip/ )
 SELLER=$(curl -sS ${Repo1}ip | grep $MYIP | awk '{print $2}')
 Exp100=$(curl -sS ${Repo1}ip | grep $MYIP | awk '{print $3}')
@@ -50,7 +50,7 @@ BGX="\033[42m"
 END='\e[0m'
 AKTIF="VERIFIED"
 TOKEN=$(cat /etc/github/api)
-REPO="https://github.com/jvoscript/permission.git"
+REPO="https://github.com/josecarlosmeza/permission.git"
 EMAIL=$(cat /etc/github/email)
 USER="jvoscript"
 
@@ -115,8 +115,8 @@ URL="https://api.telegram.org/bot$KEY/sendMessage"
     git add . &> /dev/null
     git commit -m m &> /dev/null
     git branch -M main &> /dev/null
-    git remote add origin https://github.com/jvoscript/permission
-    git push -f https://${TOKEN}@github.com/jvoscript/permission.git &> /dev/null
+    git remote add origin https://github.com/josecarlosmeza/permission
+    git push -f https://${TOKEN}@github.com/josecarlosmeza/permission.git &> /dev/null
     rm -rf /root/ipvps
     clear
     sleep 1
@@ -191,8 +191,8 @@ TIMES="10"
     git add . &> /dev/null
     git commit -m m &> /dev/null
     git branch -M main &> /dev/null
-    git remote add origin https://github.com/jvoscript/permission
-    git push -f https://${TOKEN}@github.com/jvoscript/permission.git &> /dev/null
+    git remote add origin https://github.com/josecarlosmeza/permission
+    git push -f https://${TOKEN}@github.com/josecarlosmeza/permission.git &> /dev/null
     rm -rf /root/ipvps
     clear
     sleep 1
@@ -251,8 +251,8 @@ TIMES="10"
     git add . &> /dev/null
     git commit -m m &> /dev/null
     git branch -M main &> /dev/null
-    git remote add origin https://github.com/jvoscript/permission
-    git push -f https://${TOKEN}@github.com/jvoscript/permission.git &> /dev/null
+    git remote add origin https://github.com/josecarlosmeza/permission
+    git push -f https://${TOKEN}@github.com/josecarlosmeza/permission.git &> /dev/null
     rm -rf /root/ipvps
     clear
     sleep 1
