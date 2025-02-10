@@ -52,7 +52,7 @@ AKTIF="VERIFIED"
 TOKEN=$(cat /etc/github/api)
 REPO="https://github.com/josecarlosmeza/permission.git"
 EMAIL=$(cat /etc/github/email)
-USER="jvoscript"
+USER="josecarlosmeza"
 
 
 add-ip() {
