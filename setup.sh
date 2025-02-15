@@ -708,7 +708,6 @@ function iinfo(){
 domain=$(cat /etc/xray/domain)
 TIMES="10"
 CHATID="0000000000"
-KEY="7870078180:AAEyHOqintCIVFtOchdwkUmj9r4-KeLKWKk"
 KEY="0000000000:00000000000000000000000000000000000"
 
 URL="https://api.telegram.org/bot$KEY/sendMessage"
