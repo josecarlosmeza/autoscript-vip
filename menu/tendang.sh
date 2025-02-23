@@ -200,7 +200,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 */$waktulockssh * * * * root /usr/bin/xray ssh ${username[$i]} $pass $exp
 EOF
 systemctl restart ws-stunnel > /dev/null 2>&1
-restart service cron > /dev/null 2>&1
+systemctl restart cron > /dev/null 2>&1
+#restart service cron > /dev/null 2>&1
 fi
 else
 TEXT="
