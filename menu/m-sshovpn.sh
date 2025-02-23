@@ -841,8 +841,8 @@ username[$i]=`echo $user | sed 's/'\''//g'`;
 jumlah[$i]=0;
 i=$i+1;
 done
-cat $LOG | grep -i dropbear | grep -i "Password auth succeeded" > /tmp/log-db.txt
-proc=( `ps aux | grep -i dropbear | awk '{print $2}'`);
+cat $LOG | grep -ai dropbear | grep -ai "Password auth succeeded" > /tmp/log-db.txt
+proc=( `ps aux | grep -ai dropbear | awk '{print $2}'`);
 for PID in "${proc[@]}"
 do
 cat /tmp/log-db.txt | grep "dropbear\[$PID\]" > /tmp/log-db-pid.txt
@@ -863,7 +863,7 @@ i=$i+1;
 done
 fi
 done
-cat $LOG | grep -i sshd | grep -i "Accepted password for" > /tmp/log-db.txt
+cat $LOG | grep -ai sshd | grep -ai "Accepted password for" > /tmp/log-db.txt
 data=( `ps aux | grep "\[priv\]" | sort -k 72 | awk '{print $2}'`);
 for PID in "${data[@]}"
 do
