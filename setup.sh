@@ -624,7 +624,7 @@ chmod +x tools.sh
 bash tools.sh
 clear
 start=$(date +%s)
-ln -fs /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+ln -fs /usr/share/zoneinfo/America/Argentina/Cordoba /etc/localtime
 apt install git curl -y >/dev/null 2>&1
 apt install python -y >/dev/null 2>&1
 }
