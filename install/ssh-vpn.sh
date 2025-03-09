@@ -18,8 +18,8 @@ ver=$VERSION_ID
 
 #detail nama perusahaan
 country=ID
-state=Indonesia
-locality=Jakarta
+state=Argentina
+locality=Cordoba
 organization=none
 organizationalunit=none
 commonname=none
@@ -88,8 +88,8 @@ apt-get install figlet -y
 apt-get install ruby -y
 gem install lolcat
 
-# set time GMT +7
-ln -fs /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+# set time GMT +3
+ln -fs /usr/share/zoneinfo/America/Argentina/Cordoba /etc/localtime
 
 # set locale
 sed -i 's/AcceptEnv/#AcceptEnv/g' /etc/ssh/sshd_config
