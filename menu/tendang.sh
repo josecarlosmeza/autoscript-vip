@@ -469,7 +469,7 @@ curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$T
 fi
 if [ $sship -gt $ssssh ]; then
 exp=$(grep -i "### ${username[$i]}" "/etc/xray/ssh" | cut -d ' ' -f 3 | sort | uniq)
-passq"      dateFromServer=$(curl -v --insecure --silent http://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
+pass"      dateFromServer=$(curl -v --insecure --silent http://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')"
 biji=`date +"%Y-%m-%d" -d "$dateFromServer"`
 colornow=$(cat /etc/rmbl/theme/color.conf)
 NC="\e[0m"
