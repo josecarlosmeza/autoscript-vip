@@ -246,7 +246,8 @@ service sshd restart > /dev/null 2>&1;
 fi
 service dropbear restart > /dev/null 2>&1;
 j=0;
-fi RED="\033[0;31m"
+fi
+ RED="\033[0;31m"
 COLOR1="$(cat /etc/rmbl/theme/$colornow | grep -w "TEXT" | cut -d: -f2|sed 's/ //g')"
 COLBG1="$(cat /etc/rmbl/theme/$colornow | grep -w "BG" | cut -d: -f2|sed 's/ //g')"
 WH='\033[1;37m'
@@ -469,10 +470,28 @@ curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$T
 fi
 if [ $sship -gt $ssssh ]; then
 exp=$(grep -i "### ${username[$i]}" "/etc/xray/ssh" | cut -d ' ' -f 3 | sort | uniq)
-pass"      dateFromServer=$(curl -v --insecure --silent http://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')"
-biji=`date +"%Y-%m-%d" -d "$dateFromServer"`
-colornow=$(cat /etc/rmbl/theme/color.conf)
-NC="\e[0m"
+pass=$(grep -i "### ${username[$i]}" "/etc/xray/ssh" | cut -d ' ' -f 4 | sort | uniq)
+echo "### ${username[$i]} $exp $pass" >> /etc/xray/sshx/listlock
+passwd -l ${username[$i]}
+sed -i "/^### ${username[$i]} $exp $pass/d" /etc/xray/ssh
+cd
+rm -rf /etc/xray/sshx/${username[$i]}login
+systemctl restart ws-stunnel > /dev/null 2>&1
+systemctl restart ws-dropbear > /dev/null 2>&1
+fi
+j=`expr $j + 1`;
+fi
+done
+if [ $j -gt 0 ]; then
+if [ $OS -eq 1 ]; then
+service ssh restart > /dev/null 2>&1;
+fi
+if [ $OS -eq 2 ]; then
+service sshd restart > /dev/null 2>&1;
+fi
+service dropbear restart > /dev/null 2>&1;
+j=0;
+fi
 RED="\033[0;31m"
 COLOR1="$(cat /etc/rmbl/theme/$colornow | grep -w "TEXT" | cut -d: -f2|sed 's/ //g')"
 COLBG1="$(cat /etc/rmbl/theme/$colornow | grep -w "BG" | cut -d: -f2|sed 's/ //g')"
