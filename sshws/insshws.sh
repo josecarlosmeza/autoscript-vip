@@ -4,7 +4,7 @@
 # Link Hosting Kalian
 SFVPN="https://raw.githubusercontent.com/litfina/autoscript-vip/main/install"
 
-wget -O /usr/local/bin/ws-dropbear https://raw.githubusercontent.com/litfina/autoscript-vip/main/sshws/ws-dropbear
+wget -O /usr/local/bin/ws-dropbear https://raw.githubusercontent.com/josecarlosmeza/autoscript-vip/main/sshws/ws-dropbear
 chmod +x /usr/local/bin/ws-dropbear
 
 # Installing Service
@@ -20,7 +20,7 @@ User=root
 CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 NoNewPrivileges=true
-ExecStart=/usr/bin/python -O /usr/local/bin/ws-dropbear
+ExecStart=/usr/bin/python -O /usr/local/bin/ws-dropbear 
 Restart=on-failure
 
 [Install]
@@ -32,7 +32,7 @@ systemctl enable ws-dropbear.service
 systemctl start ws-dropbear.service
 systemctl restart ws-dropbear.service
 
-wget -O /usr/local/bin/ws-ovpn https://raw.githubusercontent.com/litfina/autoscript-vip/main/sshws/ws-ovpn.py
+wget -O /usr/local/bin/ws-ovpn https://raw.githubusercontent.com/josecarlosmeza/autoscript-vip/main/sshws/ws-ovpn.py
 chmod +x /usr/local/bin/ws-ovpn
 
 # Installing Service
@@ -59,7 +59,7 @@ systemctl daemon-reload
 systemctl enable ws-ovpn
 systemctl restart ws-ovpn
 
-wget -O /usr/local/bin/ws-stunnel https://raw.githubusercontent.com/litfina/autoscript-vip/main/sshws/ws-stunnel
+wget -O /usr/local/bin/ws-stunnel https://raw.githubusercontent.com/josecarlosmeza/autoscript-vip/main/sshws/ws-stunnel
 chmod +x /usr/local/bin/ws-stunnel
 
 # Installing Service
