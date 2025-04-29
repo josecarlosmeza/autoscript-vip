@@ -806,7 +806,7 @@ echo -e "$COLOR1╭════════════════════�
 echo ""
 read -p "Username SSH to Delete : " Pengguna
 if getent passwd $Pengguna > /dev/null 2>&1; then
-userdel $Pengguna > /dev/null 2>&1
+userdel -f $Pengguna > /dev/null 2>&1
 echo -e "User $Pengguna was removed."
 else
 echo -e "Failure: User $Pengguna Not Exist."
