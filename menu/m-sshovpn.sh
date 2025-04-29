@@ -687,7 +687,7 @@ rm /home/vps/public_html/ssh-$Pengguna.txt >/dev/null 2>&1
 rm /etc/xray/sshx/${Pengguna}IP >/dev/null 2>&1
 rm /etc/xray/sshx/${Pengguna}login >/dev/null 2>&1
 if getent passwd $Pengguna > /dev/null 2>&1; then
-userdel $Pengguna > /dev/null 2>&1
+userdel -f $Pengguna > /dev/null 2>&1
 echo -e "User $Pengguna was removed."
 else
 echo -e "Failure: User $Pengguna Not Exist."
